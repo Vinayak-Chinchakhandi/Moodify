@@ -51,6 +51,3 @@ frontend/.pnp
 frontend/.pnp.js
 package-lock.json
 yarn.lock
-
-# Ignore  README files
-README.md
