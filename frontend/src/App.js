@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -10,6 +10,7 @@ import Favorites from "./pages/Favorites";
 import Playlists from "./pages/Playlists";
 import History from "./pages/History";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Intro from "./pages/Intro"; // 👈 added
 import "./App.css";
 
 function App() {
@@ -18,10 +19,19 @@ function App() {
       <Navbar />
       <div className="main-container">
         <Routes>
-          <Route path="/" element={<Home />} />
+          {/* 🟣 Intro Video Route */}
+          <Route path="/" element={<Intro />} />
+
+          {/* After intro, redirect to login */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
+          {/* Main sections */}
+          <Route
+            path="/home"
+            // element={<ProtectedRoute><Home /></ProtectedRoute>}
+            element={<Home />}
+          />
           <Route
             path="/mood-detection"
             // element={<ProtectedRoute><MoodDetection /></ProtectedRoute>}
@@ -52,6 +62,9 @@ function App() {
             // element={<ProtectedRoute><History /></ProtectedRoute>}
             element={<History />}
           />
+
+          {/* Fallback route */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
     </Router>

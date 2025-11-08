@@ -7,7 +7,7 @@ const Home = () => (
 
     {/* 👇 Temporary test links for all pages */}
     <div style={{ marginTop: "30px" }}>
-      <h3>🔧 Development Navigation</h3>
+      <h3>🔧 Development Navigation. Just for testing</h3>
       <ul style={{ listStyle: "none", padding: 0, marginTop: "10px" }}>
         <li><Link to="/mood-detection">Mood Detection</Link></li>
         <li><Link to="/chat-mood">Chat Mood</Link></li>

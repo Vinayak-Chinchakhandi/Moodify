@@ -1,0 +1,76 @@
+.intro-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: black;
+  z-index: 9999;
+}
+
+/* Splash screen */
+.intro-start-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.8rem;
+  cursor: pointer;
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+.intro-logo {
+  width: 230px; /* Slightly bigger */
+  height: 230px;
+  object-fit: contain;
+  animation: pulse 2.5s infinite ease-in-out;
+}
+
+.intro-start-text {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.85;
+  transition: transform 0.2s ease;
+}
+
+.intro-start-text:hover {
+  transform: scale(1.05);
+  color: #dcdcdc;
+}
+
+/* Video */
+.intro-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.fade-out {
+  animation: fadeOut 1.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; background-color: black; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.07); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+
+@media (max-width: 768px) {
+  .intro-logo { width: 150px; height: 150px; }
+  .intro-start-text { font-size: 1.2rem; }
+}
