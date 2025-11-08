@@ -218,6 +218,7 @@ npm run dev
 frontend/
 └── src/
     ├── assets/
+    │   ├── intro.mp4
     │   └── logo.png
     │
     ├── components/
@@ -239,6 +240,8 @@ frontend/
     │   ├── Home.jsx
     │   ├── Login.jsx
     │   ├── Signup.jsx
+    │   ├── Intro.jsx
+    │   ├── Intro.css
     │   ├── MoodDetection.jsx
     │   ├── ChatMood.jsx
     │   ├── Recommendations.jsx
