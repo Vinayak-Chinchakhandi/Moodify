@@ -1,13 +1,101 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================
+   🌌 GLOBAL LAYOUT & THEME
+=========================== */
+
+.page-container {
+  @apply relative min-h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_center,#0a0a1a,#000)] text-white font-poppins;
 }
 
-a {
-  text-decoration: none;
+.page-hero {
+  @apply flex flex-col items-center justify-center min-h-screen text-center px-6;
 }
 
-button {
-  cursor: pointer;
+.glass-card {
+  @apply bg-white/5 border border-white/10 backdrop-blur-lg rounded-2xl shadow-lg p-6 transition-transform duration-300;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #00ffff, #ff00cc, #ff6600);
+  background-size: 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientFlow 6s linear infinite;
+}
+
+.glow-hover:hover {
+  text-shadow:
+    0 0 10px rgba(0, 255, 255, 0.7),
+    0 0 20px rgba(255, 0, 255, 0.6),
+    0 0 30px rgba(255, 102, 0, 0.5);
+}
+
+/* ===========================
+   ✨ GLOBAL ANIMATIONS
+=========================== */
+@layer utilities {
+
+  /* === PARTICLES === */
+  .particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #00ffff 0%, #ff00cc 80%);
+    opacity: 0.35;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0) scale(1); opacity: 0.3; }
+    50% { transform: translateY(-25px) scale(1.1); opacity: 0.7; }
+    100% { transform: translateY(0) scale(1); opacity: 0.3; }
+  }
+
+  /* === GRADIENT FLOW === */
+  @keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  /* === LOGO GLOW === */
+  @keyframes logoGlow {
+    0% {
+      filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3))
+              drop-shadow(0 0 20px rgba(255, 0, 255, 0.2));
+    }
+    50% {
+      filter: drop-shadow(0 0 25px rgba(0, 255, 255, 0.6))
+              drop-shadow(0 0 35px rgba(255, 0, 255, 0.4));
+    }
+    100% {
+      filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3))
+              drop-shadow(0 0 20px rgba(255, 0, 255, 0.2));
+    }
+  }
+
+  /* === OTHER REUSABLE ANIMATIONS === */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes pulseText {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+  }
+
+  @keyframes videoFadeIn {
+    0% { opacity: 0; filter: brightness(0.8) contrast(1.0) saturate(1.0); }
+    100% { opacity: 1; filter: brightness(1.05) contrast(1.15) saturate(1.05); }
+  }
+
+  /* === Tailwind Animation Shortcuts === */
+  .animate-logoGlow { animation: logoGlow 4s ease-in-out infinite; }
+  .animate-fadeIn { animation: fadeIn 1.5s ease-in-out; }
+  .animate-videoFadeIn { animation: videoFadeIn 1.5s ease-in forwards; }
 }

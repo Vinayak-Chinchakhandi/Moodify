@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -9,61 +8,35 @@ import Recommendations from "./pages/Recommendations";
 import Favorites from "./pages/Favorites";
 import Playlists from "./pages/Playlists";
 import History from "./pages/History";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Intro from "./pages/Intro"; // 👈 added
+import Profile from "./pages/Profile";
+import Intro from "./pages/Intro";
+import ManualSelection from "./pages/ManualSelection";
 import "./App.css";
 
 function App() {
   return (
     <Router>
-      <Navbar />
       <div className="main-container">
         <Routes>
-          {/* 🟣 Intro Video Route */}
+          {/* 🟣 Intro Page */}
           <Route path="/" element={<Intro />} />
 
-          {/* After intro, redirect to login */}
+          {/* 🔐 Auth Pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* Main sections */}
-          <Route
-            path="/home"
-            // element={<ProtectedRoute><Home /></ProtectedRoute>}
-            element={<Home />}
-          />
-          <Route
-            path="/mood-detection"
-            // element={<ProtectedRoute><MoodDetection /></ProtectedRoute>}
-            element={<MoodDetection />}
-          />
-          <Route
-            path="/chat-mood"
-            // element={<ProtectedRoute><ChatMood /></ProtectedRoute>}
-            element={<ChatMood />}
-          />
-          <Route
-            path="/recommendations"
-            // element={<ProtectedRoute><Recommendations /></ProtectedRoute>}
-            element={<Recommendations />}
-          />
-          <Route
-            path="/favorites"
-            // element={<ProtectedRoute><Favorites /></ProtectedRoute>}
-            element={<Favorites />}
-          />
-          <Route
-            path="/playlists"
-            // element={<ProtectedRoute><Playlists /></ProtectedRoute>}
-            element={<Playlists />}
-          />
-          <Route
-            path="/history"
-            // element={<ProtectedRoute><History /></ProtectedRoute>}
-            element={<History />}
-          />
+          {/* 🏠 Main Pages */}
+          <Route path="/home" element={<Home />} />
+          <Route path="/mood-detection" element={<MoodDetection />} />
+          <Route path="/chat-mood" element={<ChatMood />} />
+          <Route path="/recommendations" element={<Recommendations />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/playlists" element={<Playlists />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/manual-selection" element={<ManualSelection />} />
 
-          {/* Fallback route */}
+          {/* 🚫 Fallback Route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
@@ -72,3 +45,123 @@ function App() {
 }
 
 export default App;
+
+
+
+
+
+
+
+
+
+// import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+// import Home from "./pages/Home";
+// import Login from "./pages/Login";
+// import Signup from "./pages/Signup";
+// import MoodDetection from "./pages/MoodDetection";
+// import ChatMood from "./pages/ChatMood";
+// import Recommendations from "./pages/Recommendations";
+// import Favorites from "./pages/Favorites";
+// import Playlists from "./pages/Playlists";
+// import History from "./pages/History";
+// import Profile from "./pages/Profile";
+// import ManualSelection from "./pages/ManualSelection";
+// import ProtectedRoute from "./components/ProtectedRoute";
+// import Intro from "./pages/Intro";
+// import "./App.css";
+
+// function App() {
+//   return (
+//     <Router>
+//       <div className="main-container">
+//         <Routes>
+//           {/* 🟣 Intro */}
+//           <Route path="/" element={<Intro />} />
+
+//           {/* 🔐 Auth Pages */}
+//           <Route path="/login" element={<Login />} />
+//           <Route path="/signup" element={<Signup />} />
+
+//           {/* 🏠 Protected Main Pages */}
+//           <Route
+//             path="/home"
+//             element={
+//               <ProtectedRoute>
+//                 <Home />
+//               </ProtectedRoute>
+//             }
+//           />
+//           <Route
+//             path="/mood-detection"
+//             element={
+//               <ProtectedRoute>
+//                 <MoodDetection />
+//               </ProtectedRoute>
+//             }
+//           />
+//           <Route
+//             path="/chat-mood"
+//             element={
+//               <ProtectedRoute>
+//                 <ChatMood />
+//               </ProtectedRoute>
+//             }
+//           />
+//           <Route
+//             path="/recommendations"
+//             element={
+//               <ProtectedRoute>
+//                 <Recommendations />
+//               </ProtectedRoute>
+//             }
+//           />
+//           <Route
+//             path="/favorites"
+//             element={
+//               <ProtectedRoute>
+//                 <Favorites />
+//               </ProtectedRoute>
+//             }
+//           />
+//           <Route
+//             path="/playlists"
+//             element={
+//               <ProtectedRoute>
+//                 <Playlists />
+//               </ProtectedRoute>
+//             }
+//           />
+//           <Route
+//             path="/history"
+//             element={
+//               <ProtectedRoute>
+//                 <History />
+//               </ProtectedRoute>
+//             }
+//           />
+//           <Route
+//             path="/profile"
+//             element={
+//               <ProtectedRoute>
+//                 <Profile />
+//               </ProtectedRoute>
+//             }
+//           />
+//           <Route
+//             path="/manual-selection"
+//             element={
+//               <ProtectedRoute>
+//                 <ManualSelection />
+//               </ProtectedRoute>
+//             }
+//           />
+
+//           {/* 🚫 Fallback */}
+//           <Route path="*" element={<Navigate to="/" />} />
+//         </Routes>
+//       </div>
+//     </Router>
+//   );
+// }
+
+// export default App;

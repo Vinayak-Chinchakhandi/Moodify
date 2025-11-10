@@ -1,15 +1,27 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import "./Intro.css";
+import { useNavigate, useLocation } from "react-router-dom";
 import introVideo from "../assets/intro.mp4";
 import logo from "../assets/logo.png";
 
 const Intro = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const videoRef = useRef(null);
   const [started, setStarted] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
   const [navigated, setNavigated] = useState(false);
+
+  // ✅ Reset intro every time route changes (e.g. logo clicked)
+  useEffect(() => {
+    setStarted(false);
+    setFadeOut(false);
+    setNavigated(false);
+    const video = videoRef.current;
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [location.key]);
 
   const startVideo = async () => {
     try {
@@ -34,6 +46,7 @@ const Intro = () => {
     }
   };
 
+  // Auto skip once video ends or timeout
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -58,34 +71,57 @@ const Intro = () => {
   }, [started]);
 
   return (
-    <div className={`intro-container ${started ? "started" : ""} ${fadeOut ? "fade-out" : ""}`}>
+    <div
+      className={`fixed inset-0 flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,#0a0a1a,#000)] z-[9999] transition-opacity duration-[1500ms] ${
+        fadeOut ? "opacity-0" : "opacity-100"
+      }`}
+    >
       {!started ? (
         <>
-          {/* Floating particles */}
-          <div className="particles">
+          {/* 🌌 Floating Particles (below content) */}
+          <div className="absolute inset-0 overflow-hidden -z-10">
             {[...Array(25)].map((_, i) => (
               <div
                 key={i}
-                className="particle"
+                className="absolute w-2 h-2 rounded-full opacity-40 animate-float"
                 style={{
                   top: `${Math.random() * 100}%`,
                   left: `${Math.random() * 100}%`,
+                  background:
+                    "radial-gradient(circle, #00ffff 0%, #ff00cc 80%)",
                   animationDelay: `${Math.random() * 4}s`,
                 }}
-              />
+              ></div>
             ))}
           </div>
 
-          {/* Logo + Tap to Begin */}
-          <div className="intro-start-screen" onClick={startVideo}>
-            <img src={logo} alt="Moodify Logo" className="intro-logo" />
-            <h1 className="intro-start-text">Tap to Begin Experience</h1>
+          {/* 🎵 Logo + Tap to Begin */}
+          <div
+            className="relative z-10 flex flex-col items-center justify-center gap-8 cursor-pointer animate-fadeIn"
+            onClick={startVideo}
+          >
+            <img
+              src={logo}
+              alt="Moodify Logo"
+              className="w-80 h-80 rounded-full object-cover transition-transform duration-300 hover:scale-105 animate-logoGlow"
+            />
+            <h1
+              className="text-2xl md:text-3xl font-semibold uppercase tracking-wider select-none gradient-text"
+            >
+              Tap to Begin Experience
+            </h1>
           </div>
         </>
       ) : (
         <video
           ref={videoRef}
-          className="intro-video"
+          className="absolute top-0 left-0 w-full h-full object-cover bg-black z-10 animate-videoFadeIn"
+          style={{
+            filter: "brightness(1.05) contrast(1.15) saturate(1.05)",
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+            willChange: "transform, opacity, filter",
+          }}
           playsInline
           preload="auto"
           autoPlay
