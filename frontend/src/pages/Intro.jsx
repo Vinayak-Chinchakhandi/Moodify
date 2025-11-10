@@ -30,7 +30,7 @@ const Intro = () => {
     if (!navigated) {
       setNavigated(true);
       setFadeOut(true);
-      setTimeout(() => navigate("/login"), 1000);
+      setTimeout(() => navigate("/login"), 1200);
     }
   };
 
@@ -40,7 +40,6 @@ const Intro = () => {
 
     const handleEnd = () => navigateToLogin();
 
-    // Fallback: manually check time every 300ms
     const interval = setInterval(() => {
       if (video && started && video.duration > 0) {
         const remaining = video.duration - video.currentTime;
@@ -49,8 +48,6 @@ const Intro = () => {
     }, 300);
 
     video.addEventListener("ended", handleEnd);
-
-    // Backup timer — ensures redirect even if all else fails
     const backupTimer = setTimeout(() => navigateToLogin(), 15000);
 
     return () => {
@@ -61,12 +58,30 @@ const Intro = () => {
   }, [started]);
 
   return (
-    <div className={`intro-container ${fadeOut ? "fade-out" : ""}`}>
+    <div className={`intro-container ${started ? "started" : ""} ${fadeOut ? "fade-out" : ""}`}>
       {!started ? (
-        <div className="intro-start-screen" onClick={startVideo}>
-          <img src={logo} alt="Moodify Logo" className="intro-logo" />
-          <h1 className="intro-start-text">Tap to Begin Experience</h1>
-        </div>
+        <>
+          {/* Floating particles */}
+          <div className="particles">
+            {[...Array(25)].map((_, i) => (
+              <div
+                key={i}
+                className="particle"
+                style={{
+                  top: `${Math.random() * 100}%`,
+                  left: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 4}s`,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Logo + Tap to Begin */}
+          <div className="intro-start-screen" onClick={startVideo}>
+            <img src={logo} alt="Moodify Logo" className="intro-logo" />
+            <h1 className="intro-start-text">Tap to Begin Experience</h1>
+          </div>
+        </>
       ) : (
         <video
           ref={videoRef}
