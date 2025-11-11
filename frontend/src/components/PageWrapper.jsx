@@ -1,18 +1,10 @@
 import ParticleBackground from "./ParticleBackground";
 
-const PageWrapper = ({ children, className = "" }) => {
+const PageWrapper = ({ children }) => {
   return (
-    <div
-      className={`relative min-h-screen text-white overflow-hidden ${className}`}
-    >
-      {/* 🌌 Particle Background */}
+    <div className="relative min-h-screen bg-[radial-gradient(circle_at_center,#0a0a1a,#000)] text-white overflow-hidden">
       <ParticleBackground />
-
-      {/* 🎨 Gradient Background Layer */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#0a0a1a,#000)] -z-20" />
-
-      {/* 📦 Page Content */}
-      <div className="relative z-20">{children}</div>
+      <div className="relative z-10">{children}</div>
     </div>
   );
 };

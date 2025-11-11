@@ -22,6 +22,7 @@ const Login = () => {
     }, 1000);
   };
 
+  
   return (
     <PageWrapper>
       <div className="relative flex flex-col items-center justify-center min-h-screen text-white px-6">

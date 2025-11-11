@@ -59,10 +59,14 @@
 
   /* === FLOAT UP/DOWN === */
   @keyframes float {
-    0% { transform: translateY(0) scale(1); opacity: 0.3; }
-    50% { transform: translateY(-25px) scale(1.1); opacity: 0.8; }
-    100% { transform: translateY(0) scale(1); opacity: 0.3; }
-  }
+  0% { transform: translateY(0px) scale(1); opacity: 0.4; }
+  50% { transform: translateY(-25px) scale(1.1); opacity: 0.8; }
+  100% { transform: translateY(0px) scale(1); opacity: 0.4; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
 
   /* === SMALL SIDE DRIFT === */
   @keyframes floatX {
