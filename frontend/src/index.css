@@ -35,25 +35,40 @@
 }
 
 /* ===========================
-   ✨ GLOBAL ANIMATIONS
+   ✨ PARTICLES + ANIMATIONS
 =========================== */
 @layer utilities {
 
   /* === PARTICLES === */
   .particle {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #00ffff 0%, #ff00cc 80%);
-    opacity: 0.35;
+    @apply absolute rounded-full opacity-70 w-2 h-2;
+    background: radial-gradient(circle, rgba(0,255,255,0.95) 0%, rgba(255,0,204,0.9) 80%);
     animation: float 6s ease-in-out infinite;
+    will-change: transform, opacity;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(0,255,255,0.4), 0 0 20px rgba(255,0,204,0.3);
   }
 
+  /* Optional slight horizontal drift for realism */
+  .particle--drift {
+    animation-name: float, floatX;
+    animation-duration: 6s, 10s;
+    animation-timing-function: ease-in-out, ease-in-out;
+    animation-iteration-count: infinite, infinite;
+  }
+
+  /* === FLOAT UP/DOWN === */
   @keyframes float {
     0% { transform: translateY(0) scale(1); opacity: 0.3; }
-    50% { transform: translateY(-25px) scale(1.1); opacity: 0.7; }
+    50% { transform: translateY(-25px) scale(1.1); opacity: 0.8; }
     100% { transform: translateY(0) scale(1); opacity: 0.3; }
+  }
+
+  /* === SMALL SIDE DRIFT === */
+  @keyframes floatX {
+    0% { transform: translateX(0) translateY(0); }
+    50% { transform: translateX(10px) translateY(-10px); }
+    100% { transform: translateX(0) translateY(0); }
   }
 
   /* === GRADIENT FLOW === */
@@ -98,4 +113,21 @@
   .animate-logoGlow { animation: logoGlow 4s ease-in-out infinite; }
   .animate-fadeIn { animation: fadeIn 1.5s ease-in-out; }
   .animate-videoFadeIn { animation: videoFadeIn 1.5s ease-in forwards; }
+}
+
+/* ===========================
+   🌈 SCROLLBAR (optional aesthetic)
+=========================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00ffff, #ff00cc);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }
