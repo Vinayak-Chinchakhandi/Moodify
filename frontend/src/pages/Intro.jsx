@@ -11,7 +11,7 @@ const Intro = () => {
   const [fadeOut, setFadeOut] = useState(false);
   const [navigated, setNavigated] = useState(false);
 
-  // ✅ Reset intro every time route changes (e.g. logo clicked)
+  // ✅ Reset intro when revisited
   useEffect(() => {
     setStarted(false);
     setFadeOut(false);
@@ -46,26 +46,17 @@ const Intro = () => {
     }
   };
 
-  // Auto skip once video ends or timeout
+  // Auto skip after video or timeout
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleEnd = () => navigateToLogin();
-
-    const interval = setInterval(() => {
-      if (video && started && video.duration > 0) {
-        const remaining = video.duration - video.currentTime;
-        if (remaining < 0.25) navigateToLogin();
-      }
-    }, 300);
-
     video.addEventListener("ended", handleEnd);
-    const backupTimer = setTimeout(() => navigateToLogin(), 15000);
 
+    const backupTimer = setTimeout(() => navigateToLogin(), 10000);
     return () => {
       video.removeEventListener("ended", handleEnd);
-      clearInterval(interval);
       clearTimeout(backupTimer);
     };
   }, [started]);
@@ -78,7 +69,7 @@ const Intro = () => {
     >
       {!started ? (
         <>
-          {/* 🌌 Floating Particles (below content) */}
+          {/* 🌌 Floating Particles */}
           <div className="absolute inset-0 overflow-hidden -z-10">
             {[...Array(25)].map((_, i) => (
               <div
@@ -95,24 +86,36 @@ const Intro = () => {
             ))}
           </div>
 
-          {/* 🎵 Logo + Tap to Begin */}
+          {/* 🎵 Logo Section */}
           <div
-            className="relative z-10 flex flex-col items-center justify-center gap-8 cursor-pointer animate-fadeIn"
+            className="relative z-10 flex flex-col items-center justify-center gap-8 animate-fadeInUp"
             onClick={startVideo}
           >
+            {/* ✨ Glowing Aura */}
+            <div className="absolute w-[340px] h-[340px] rounded-full bg-[radial-gradient(circle,rgba(0,255,255,0.5),rgba(255,0,204,0.25),transparent)] blur-3xl animate-pulseSlow" />
+
             <img
               src={logo}
               alt="Moodify Logo"
-              className="w-80 h-80 rounded-full object-cover transition-transform duration-300 hover:scale-105 animate-logoGlow"
+              className="w-80 h-80 rounded-full object-cover transition-transform duration-300 hover:scale-105 animate-logoGlow relative z-10 cursor-pointer"
             />
-            <h1
-              className="text-2xl md:text-3xl font-semibold uppercase tracking-wider select-none gradient-text"
-            >
+
+            {/* 🌈 Shimmer Text */}
+            <h1 className="text-2xl md:text-3xl font-semibold uppercase tracking-wider select-none bg-gradient-to-r from-cyan-400 via-pink-500 to-orange-400 bg-[length:200%_auto] animate-shineText bg-clip-text text-transparent">
               Tap to Begin Experience
             </h1>
           </div>
+
+          {/* 🕹 Skip Intro Button (looks elegant, bottom-right) */}
+          <button
+            onClick={navigateToLogin}
+            className="absolute bottom-10 right-10 px-6 py-2 rounded-full text-sm bg-white/10 hover:bg-white/20 text-gray-300 border border-white/20 transition-all backdrop-blur-sm shadow-lg"
+          >
+            Skip Intro ⏭
+          </button>
         </>
       ) : (
+        // 🎥 Video Section
         <video
           ref={videoRef}
           className="absolute top-0 left-0 w-full h-full object-cover bg-black z-10 animate-videoFadeIn"
@@ -130,6 +133,41 @@ const Intro = () => {
           Your browser does not support the video tag.
         </video>
       )}
+
+      {/* ✨ Animations */}
+      <style>{`
+        @keyframes float {
+          0% { transform: translateY(0px) scale(1); opacity: 0.4; }
+          50% { transform: translateY(-25px) scale(1.1); opacity: 0.8; }
+          100% { transform: translateY(0px) scale(1); opacity: 0.4; }
+        }
+
+        @keyframes pulseSlow {
+          0%, 100% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 0.9; transform: scale(1.05); }
+        }
+
+        @keyframes shineText {
+          to { background-position: 200% center; }
+        }
+
+        @keyframes fadeInUp {
+          0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .animate-fadeInUp {
+          animation: fadeInUp 1.5s ease-out forwards;
+        }
+
+        .animate-shineText {
+          animation: shineText 4s linear infinite;
+        }
+
+        .animate-pulseSlow {
+          animation: pulseSlow 3s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };
