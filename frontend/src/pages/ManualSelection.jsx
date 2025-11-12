@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
+import Dropdown from "../components/Dropdown"; // ✅ Reusable dropdown component
 
 const ManualSelection = () => {
   const [genre, setGenre] = useState("");
@@ -17,7 +18,7 @@ const ManualSelection = () => {
     const selectedMood = mood || "Custom";
     navigate("/recommendations", {
       state: {
-        source: "manual", // ✅ identifies source page
+        source: "manual",
         mood: selectedMood,
         genre,
         artist,
@@ -33,41 +34,34 @@ const ManualSelection = () => {
           <h2 className="text-3xl md:text-4xl font-extrabold mb-6 gradient-text">
             🎼 Manual Selection
           </h2>
+
           <p className="text-gray-300 mb-8">
             Choose your favorite <span className="text-cyan-400">genre</span>,{" "}
             <span className="text-pink-400">artist</span>, or{" "}
-            <span className="text-orange-400">mood</span> — and let Moodify tune the
-            perfect vibe!
+            <span className="text-orange-400">mood</span> — and let Moodify tune
+            the perfect vibe!
           </p>
 
           {/* 🎛️ Selection Form */}
           <div className="space-y-6 text-left">
-            {/* Genre Dropdown */}
-            <div>
-              <label className="block text-gray-300 mb-2 text-lg">
-                🎵 Select Genre
-              </label>
-              <div className="rounded-lg p-[2px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
-                <select
-                  value={genre}
-                  onChange={(e) => setGenre(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
-                >
-                  <option className="bg-[#111] text-white">
-                    -- Choose Genre --
-                  </option>
-                  <option className="bg-[#111] text-white">Pop</option>
-                  <option className="bg-[#111] text-white">Rock</option>
-                  <option className="bg-[#111] text-white">Hip-Hop</option>
-                  <option className="bg-[#111] text-white">Jazz</option>
-                  <option className="bg-[#111] text-white">Classical</option>
-                  <option className="bg-[#111] text-white">Lo-Fi</option>
-                  <option className="bg-[#111] text-white">EDM</option>
-                </select>
-              </div>
-            </div>
+            {/* 🎵 Genre Dropdown */}
+            <Dropdown
+              label="🎵 Select Genre"
+              value={genre}
+              onChange={setGenre}
+              options={[
+                "-- Choose Genre --",
+                "Pop",
+                "Rock",
+                "Hip-Hop",
+                "Jazz",
+                "Classical",
+                "Lo-Fi",
+                "EDM",
+              ]}
+            />
 
-            {/* Artist Input */}
+            {/* 🎤 Artist Input */}
             <div>
               <label className="block text-gray-300 mb-2 text-lg">
                 🎤 Favorite Artist
@@ -83,31 +77,23 @@ const ManualSelection = () => {
               </div>
             </div>
 
-            {/* Mood Dropdown */}
-            <div>
-              <label className="block text-gray-300 mb-2 text-lg">
-                😊 Choose Mood
-              </label>
-              <div className="rounded-lg p-[2px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
-                <select
-                  value={mood}
-                  onChange={(e) => setMood(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-orange-400 cursor-pointer"
-                >
-                  <option className="bg-[#111] text-white">
-                    -- Select Mood --
-                  </option>
-                  <option className="bg-[#111] text-white">Happy</option>
-                  <option className="bg-[#111] text-white">Sad</option>
-                  <option className="bg-[#111] text-white">Calm</option>
-                  <option className="bg-[#111] text-white">Energetic</option>
-                  <option className="bg-[#111] text-white">Romantic</option>
-                </select>
-              </div>
-            </div>
+            {/* 😊 Mood Dropdown */}
+            <Dropdown
+              label="😊 Choose Mood"
+              value={mood}
+              onChange={setMood}
+              options={[
+                "-- Select Mood --",
+                "Happy",
+                "Sad",
+                "Calm",
+                "Energetic",
+                "Romantic",
+              ]}
+            />
           </div>
 
-          {/* 🔘 Buttons Row (Side by Side) */}
+          {/* 🔘 Buttons Row */}
           <div className="flex justify-center gap-6 mt-10 animate-fadeIn flex-wrap">
             <button
               onClick={handleRecommend}

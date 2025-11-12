@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
 
@@ -10,9 +10,21 @@ const ChatMood = () => {
   const [detectedMood, setDetectedMood] = useState(null);
   const [showRecommend, setShowRecommend] = useState(false);
   const navigate = useNavigate();
+  const chatEndRef = useRef(null);
 
-  // 🧠 Mood detection logic
-  const detectMood = (text) => {
+  // Scroll to bottom when new message arrives
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // === Placeholder Mood Detection ===
+  // Later replace this with ML model API call
+  const detectMood = async (text) => {
+    // Example: you could call your ML model API here
+    // const response = await fetch("/api/detect-mood", { method: "POST", body: JSON.stringify({ text }) });
+    // const data = await response.json();
+    // return data.mood;
+
     const lower = text.toLowerCase();
     if (lower.includes("happy") || lower.includes("good")) return "Happy";
     if (lower.includes("sad") || lower.includes("down")) return "Sad";
@@ -21,36 +33,34 @@ const ChatMood = () => {
     return "Neutral";
   };
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const userMessage = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
-
-    setTimeout(() => {
-      const mood = detectMood(input);
-      setDetectedMood(mood);
-
-      const aiResponse = {
-        sender: "ai",
-        text: `I sense you're feeling ${
-          mood === "Neutral" ? "🤔 Neutral" : `🎭 ${mood}`
-        }. Would you like to explore songs that match your vibe? 🎶`,
-      };
-
-      setMessages((prev) => [...prev, aiResponse]);
-      setShowRecommend(true);
-    }, 1000);
-
     setInput("");
+
+    // Detect mood (replace with ML API later)
+    const mood = await detectMood(input);
+    setDetectedMood(mood);
+
+    const aiResponse = {
+      sender: "ai",
+      text: `I sense you're feeling ${
+        mood === "Neutral" ? "🤔 Neutral" : `🎭 ${mood}`
+      }. Based on this, I can recommend songs that match your vibe! 🎶`,
+    };
+
+    setMessages((prev) => [...prev, aiResponse]);
+    setShowRecommend(true);
   };
 
   const handleRecommend = () => {
     if (detectedMood) {
       navigate("/recommendations", {
         state: {
-          source: "chat", // ✅ identifies the source
+          source: "chat",
           mood: detectedMood,
         },
       });
@@ -61,7 +71,7 @@ const ChatMood = () => {
     <PageWrapper>
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8">
         {/* 💬 Chat Box */}
-        <div className="w-full max-w-2xl glass-card p-8 flex flex-col justify-between min-h-[520px] backdrop-blur-2xl border border-white/10">
+        <div className="w-full max-w-2xl glass-card p-8 flex flex-col justify-between min-h-[520px] backdrop-blur-2xl border border-white/10 rounded-2xl">
           <h2 className="text-3xl font-extrabold mb-4 gradient-text text-center">
             Chat Mood Detection 💬
           </h2>
@@ -86,6 +96,7 @@ const ChatMood = () => {
                 </div>
               </div>
             ))}
+            <div ref={chatEndRef} />
           </div>
 
           {/* ✏️ Input Box */}
@@ -115,7 +126,7 @@ const ChatMood = () => {
                 onClick={handleRecommend}
                 className="px-8 py-3 rounded-full font-semibold bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 text-white hover:scale-105 transition-transform shadow-[0_0_25px_rgba(255,0,255,0.3),0_0_45px_rgba(0,255,255,0.3)]"
               >
-                Yes, take me there 🎶
+                Yes, recommend songs 🎶
               </button>
             </div>
           )}

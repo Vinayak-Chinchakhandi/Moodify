@@ -1,11 +1,24 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
+import SongCard from "../components/SongCard";
+import AudioPlayer from "../components/AudioPlayer";
+import { useState } from "react";
 
 const Recommendations = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location || {};
   const { mood, genre, artist, source } = state || {};
+
+  // 🔹 Mock recommended songs for now
+  const [recommendedSongs] = useState([
+    { id: 1, title: "Peaceful Mind", artist: "AIVA", cover: "/assets/covers/calm.jpg" },
+    { id: 2, title: "Energetic Flow", artist: "DJ Vibe", cover: "/assets/covers/happy.jpg" },
+    { id: 3, title: "Lo-Fi Dreams", artist: "ChillHop", cover: "/assets/covers/lofi.jpg" },
+    { id: 4, title: "Romantic Sunset", artist: "Luna", cover: "/assets/covers/romantic.jpg" },
+    { id: 5, title: "Jazz Vibes", artist: "SmoothJazz", cover: "/assets/covers/jazz.jpg" },
+    { id: 6, title: "Classical Peace", artist: "Mozart", cover: "/assets/covers/classical.jpg" },
+  ]);
 
   // Dynamic Back Button
   const handleBack = () => {
@@ -19,7 +32,7 @@ const Recommendations = () => {
     <PageWrapper>
       <div className="flex flex-col items-center justify-center min-h-screen text-white px-6 py-10 text-center">
         {/* 🎧 Recommendation Container */}
-        <div className="relative z-10 w-full max-w-4xl glass-card p-10 backdrop-blur-2xl border border-white/10 rounded-2xl">
+        <div className="relative z-10 w-full max-w-5xl glass-card p-10 backdrop-blur-2xl border border-white/10 rounded-2xl">
           <h2 className="text-4xl font-extrabold mb-6 gradient-text">
             Your Recommended Songs 🎵
           </h2>
@@ -40,21 +53,25 @@ const Recommendations = () => {
             )}
           </p>
 
-          {/* 🎶 Recommended Songs Mock Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-left">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="p-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md hover:scale-105 transition-transform duration-300 cursor-pointer"
-              >
-                <h3 className="text-xl font-semibold text-cyan-400 mb-2">
-                  Song {i + 1}
-                </h3>
-                <p className="text-gray-300 text-sm">
-                  Artist Name — Genre Type 🎧
-                </p>
-              </div>
+          {/* 🎶 Recommended Songs Grid using SongCard */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {recommendedSongs.map((song) => (
+              <SongCard
+                key={song.id}
+                title={song.title}
+                artist={song.artist}
+                cover={song.cover}
+              />
             ))}
+          </div>
+
+          {/* 🔊 Audio Player centered */}
+          <div className="mt-8 flex justify-center w-full">
+            <div className="w-full max-w-lg">
+              <div className="mx-auto">
+                <AudioPlayer songs={recommendedSongs} />
+              </div>
+            </div>
           </div>
 
           {/* 🔘 Back Button */}
