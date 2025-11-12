@@ -222,10 +222,10 @@ frontend/
     │   └── logo.png
     │
     ├── components/
-    │   ├── Navbar.jsx
-    │   ├── MoodSelector.jsx
+    │   ├── Dropdown.jsx
+    │   ├── PageaWrapper.jsx
     │   ├── SongCard.jsx
-    │   ├── ChatInput.jsx
+    │   ├── ParticleBackground.jsx
     │   ├── WebcamCapture.jsx
     │   ├── AudioPlayer.jsx
     │   ├── Loader.jsx
@@ -241,7 +241,8 @@ frontend/
     │   ├── Login.jsx
     │   ├── Signup.jsx
     │   ├── Intro.jsx
-    │   ├── Intro.css
+    │   ├── ManualSelection.jsx
+    │   ├── profile.jsx
     │   ├── MoodDetection.jsx
     │   ├── ChatMood.jsx
     │   ├── Recommendations.jsx

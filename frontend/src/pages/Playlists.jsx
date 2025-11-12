@@ -1,42 +1,29 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
 import PlaylistCard from "../components/PlaylistCard";
 import AudioPlayer from "../components/AudioPlayer";
+import { auth, db } from "../firebase/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 
 const Playlists = () => {
-  // 🎧 Temporary mock playlists (replace with Firebase data later)
-  const playlists = [
-    {
-      id: 1,
-      name: "Happy Vibes",
-      mood: "Happy",
-      songs: [
-        { id: 1, title: "Sunny Day", artist: "VibesOnly", src: "/assets/music/happy.mp3" },
-        { id: 2, title: "Smiles", artist: "GoodMood", src: "/assets/music/happy2.mp3" },
-      ],
-      image: "/assets/covers/happy.jpg",
-    },
-    {
-      id: 2,
-      name: "Chill Evenings",
-      mood: "Relaxed",
-      songs: [
-        { id: 3, title: "Lofi Lane", artist: "ChillHop", src: "/assets/music/lofi.mp3" },
-        { id: 4, title: "Night Breeze", artist: "CalmBeat", src: "/assets/music/lofi2.mp3" },
-      ],
-      image: "/assets/covers/lofi.jpg",
-    },
-    {
-      id: 3,
-      name: "Focus Flow",
-      mood: "Calm",
-      songs: [
-        { id: 5, title: "Zen Code", artist: "AIVA", src: "/assets/music/calm.mp3" },
-        { id: 6, title: "Concentration", artist: "MindState", src: "/assets/music/calm2.mp3" },
-      ],
-      image: "/assets/covers/calm.jpg",
-    },
-  ];
+  const [playlists, setPlaylists] = useState([]);
+
+  useEffect(() => {
+    if (!auth.currentUser) return;
+
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+
+    // Real-time listener for user's playlists
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setPlaylists(data.playlists || []); // Defaults to empty array
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, []);
 
   return (
     <PageWrapper>
@@ -53,15 +40,23 @@ const Playlists = () => {
 
           {/* 📂 Playlists Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {playlists.map((playlist) => (
-              <PlaylistCard key={playlist.id} song={playlist} />
-            ))}
+            {playlists.length > 0 ? (
+              playlists.map((playlist, index) => (
+                <PlaylistCard key={index} song={playlist} />
+              ))
+            ) : (
+              <p className="text-gray-400 col-span-full">
+                No playlists yet. Start creating your own! 🎵
+              </p>
+            )}
           </div>
 
           {/* 🎧 Audio Player Preview */}
-          <div className="flex justify-center mb-10">
-            <AudioPlayer playlist={playlists[0].songs} />
-          </div>
+          {playlists.length > 0 && playlists[0].songs && playlists[0].songs.length > 0 && (
+            <div className="flex justify-center mb-10">
+              <AudioPlayer playlist={playlists[0].songs} />
+            </div>
+          )}
 
           {/* 🏠 Back to Home Button */}
           <Link

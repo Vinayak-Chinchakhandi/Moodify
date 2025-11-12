@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -10,12 +12,8 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// ✅ Fallback safeguard (prevents crash if env missing)
-if (!firebaseConfig.apiKey) {
-  console.warn("⚠️ Firebase API key missing — using mock fallback config");
-  firebaseConfig.apiKey = "FAKE_API_KEY_FOR_DEV";
-}
-
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 export default app;

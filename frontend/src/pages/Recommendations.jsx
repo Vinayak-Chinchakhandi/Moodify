@@ -2,7 +2,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
 import SongCard from "../components/SongCard";
 import AudioPlayer from "../components/AudioPlayer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { auth, db } from "../firebase/firebase";
+import { doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 
 const Recommendations = () => {
   const navigate = useNavigate();
@@ -10,7 +12,6 @@ const Recommendations = () => {
   const { state } = location || {};
   const { mood, genre, artist, source } = state || {};
 
-  // 🔹 Mock recommended songs for now
   const [recommendedSongs] = useState([
     { id: 1, title: "Peaceful Mind", artist: "AIVA", cover: "/assets/covers/calm.jpg" },
     { id: 2, title: "Energetic Flow", artist: "DJ Vibe", cover: "/assets/covers/happy.jpg" },
@@ -20,7 +21,20 @@ const Recommendations = () => {
     { id: 6, title: "Classical Peace", artist: "Mozart", cover: "/assets/covers/classical.jpg" },
   ]);
 
-  // Dynamic Back Button
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!auth.currentUser) return;
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        setUserData(userSnap.data());
+      }
+    };
+    fetchUserData();
+  }, []);
+
   const handleBack = () => {
     if (source === "manual") navigate("/manual-selection");
     else if (source === "mood") navigate("/mood-detection");
@@ -28,10 +42,35 @@ const Recommendations = () => {
     else navigate("/home");
   };
 
+  const addToFavorites = async (song) => {
+    if (!auth.currentUser) return;
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(userRef, {
+      favorites: arrayUnion(song)
+    });
+    alert(`✅ "${song.title}" added to favorites!`);
+  };
+
+  const addToPlaylist = async (song, playlistName) => {
+    if (!auth.currentUser) return;
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const playlists = userSnap.data().playlists || [];
+      const playlistIndex = playlists.findIndex(p => p.name === playlistName);
+      if (playlistIndex >= 0) {
+        playlists[playlistIndex].songs.push(song);
+      } else {
+        playlists.push({ name: playlistName, mood: song.mood || "Custom", songs: [song] });
+      }
+      await updateDoc(userRef, { playlists });
+      alert(`✅ "${song.title}" added to playlist "${playlistName}"!`);
+    }
+  };
+
   return (
     <PageWrapper>
       <div className="flex flex-col items-center justify-center min-h-screen text-white px-6 py-10 text-center">
-        {/* 🎧 Recommendation Container */}
         <div className="relative z-10 w-full max-w-5xl glass-card p-10 backdrop-blur-2xl border border-white/10 rounded-2xl">
           <h2 className="text-4xl font-extrabold mb-6 gradient-text">
             Your Recommended Songs 🎵
@@ -53,7 +92,6 @@ const Recommendations = () => {
             )}
           </p>
 
-          {/* 🎶 Recommended Songs Grid using SongCard */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {recommendedSongs.map((song) => (
               <SongCard
@@ -61,11 +99,12 @@ const Recommendations = () => {
                 title={song.title}
                 artist={song.artist}
                 cover={song.cover}
+                onAddToPlaylist={(playlistName) => addToPlaylist(song, playlistName)}
+                onPlayPause={() => {}}
               />
             ))}
           </div>
 
-          {/* 🔊 Audio Player centered */}
           <div className="mt-8 flex justify-center w-full">
             <div className="w-full max-w-lg">
               <div className="mx-auto">
@@ -74,7 +113,6 @@ const Recommendations = () => {
             </div>
           </div>
 
-          {/* 🔘 Back Button */}
           <div className="flex justify-center mt-10">
             <button
               onClick={handleBack}

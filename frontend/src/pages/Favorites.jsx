@@ -1,15 +1,30 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
 import PlaylistCard from "../components/PlaylistCard";
 import AudioPlayer from "../components/AudioPlayer";
+import { auth, db } from "../firebase/firebase";
+import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 
 const Favorites = () => {
-  // 🗂️ Temporary static favorites — later replace with Firebase data
-  const favorites = [
-    { id: 1, title: "Peaceful Mind", artist: "AIVA", mood: "Calm", image: "/assets/covers/calm.jpg", src: "/assets/music/calm.mp3" },
-    { id: 2, title: "Energetic Flow", artist: "DJ Vibe", mood: "Happy", image: "/assets/covers/happy.jpg", src: "/assets/music/happy.mp3" },
-    { id: 3, title: "Lo-Fi Dreams", artist: "ChillHop", mood: "Relaxed", image: "/assets/covers/lofi.jpg", src: "/assets/music/lofi.mp3" },
-  ];
+  const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    if (!auth.currentUser) return;
+
+    // Reference to the current user's favorites
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+
+    // Real-time listener
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setFavorites(data.favorites || []); // defaults to empty array if none
+      }
+    });
+
+    return () => unsubscribe(); // cleanup listener on unmount
+  }, []);
 
   return (
     <PageWrapper>
@@ -26,15 +41,19 @@ const Favorites = () => {
 
           {/* === 🎵 Favorites Grid === */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {favorites.map((song) => (
-              <PlaylistCard key={song.id} song={song} />
-            ))}
+            {favorites.length > 0 ? (
+              favorites.map((song, index) => <PlaylistCard key={index} song={song} />)
+            ) : (
+              <p className="text-gray-400 col-span-full">No favorites yet. Start adding your favorite songs! 🎵</p>
+            )}
           </div>
 
           {/* === 🎧 Audio Player === */}
-          <div className="flex justify-center mb-10">
-            <AudioPlayer playlist={favorites} />
-          </div>
+          {favorites.length > 0 && (
+            <div className="flex justify-center mb-10">
+              <AudioPlayer playlist={favorites} />
+            </div>
+          )}
 
           {/* === 🔙 Back Button === */}
           <Link

@@ -1,22 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
 import Dropdown from "../components/Dropdown";
+import { auth, db, storage } from "../firebase/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { AiOutlineCamera } from "react-icons/ai"; // pencil/camera icon
 
 const Profile = () => {
   const navigate = useNavigate();
-
   const [user, setUser] = useState({
-    name: "Vinayak Chinchakhandi",
-    email: "vinayak@example.com",
+    name: "",
+    email: "",
     password: "********",
     language1: "English",
     language2: "Kannada",
     language3: "Hindi",
+    profilePic: "",
   });
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState(user);
+  const [uploading, setUploading] = useState(false);
+
+  const languageOptions = ["Kannada", "English", "Hindi", "Telugu", "Tamil", "Malayalam"];
+
+  // Load current user info from Firestore on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!auth.currentUser) return;
+      const docRef = doc(db, "users", auth.currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setUser({ ...user, ...data });
+        setForm({ ...user, ...data });
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleEdit = () => setEditing(true);
   const handleCancel = () => {
@@ -24,16 +46,47 @@ const Profile = () => {
     setForm(user);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    setUser(form);
-    setEditing(false);
-    alert("✅ Profile updated successfully!");
+    if (!auth.currentUser) return;
+
+    try {
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      await updateDoc(userRef, {
+        ...form,
+      });
+      setUser(form);
+      setEditing(false);
+      alert("✅ Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("❌ Failed to update profile.");
+    }
   };
 
   const handleLogout = () => navigate("/login");
 
-  const languageOptions = ["Kannada", "English", "Hindi", "Telugu", "Tamil", "Malayalam"];
+  const handleProfilePicChange = async (e) => {
+    if (!e.target.files[0] || !auth.currentUser) return;
+    const file = e.target.files[0];
+    const storageRef = ref(storage, `profilePics/${auth.currentUser.uid}`);
+    setUploading(true);
+
+    const uploadTask = uploadBytesResumable(storageRef, file);
+    uploadTask.on(
+      "state_changed",
+      null,
+      (err) => {
+        console.error("Upload error:", err);
+        setUploading(false);
+      },
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        setForm({ ...form, profilePic: url });
+        setUploading(false);
+      }
+    );
+  };
 
   return (
     <PageWrapper>
@@ -49,11 +102,29 @@ const Profile = () => {
         >
           <h2 className="text-4xl font-extrabold mb-6 gradient-text">Your Profile 👤</h2>
 
-          <img
-            src="/assets/default-avatar.png"
-            alt="User Avatar"
-            className="w-32 h-32 rounded-full border-4 border-cyan-400 object-cover mb-6 mx-auto"
-          />
+          <div className="relative w-32 h-32 mx-auto mb-6">
+            <img
+              src={form.profilePic || "/assets/default-avatar.png"}
+              alt="User Avatar"
+              className="w-32 h-32 rounded-full border-4 border-cyan-400 object-cover"
+            />
+            {editing && (
+              <label
+                htmlFor="profilePicInput"
+                className="absolute bottom-0 right-0 bg-cyan-500 text-white p-2 rounded-full cursor-pointer hover:bg-cyan-400 transition"
+                title="Change Profile Picture"
+              >
+                <AiOutlineCamera size={20} />
+                <input
+                  type="file"
+                  id="profilePicInput"
+                  accept="image/*"
+                  onChange={handleProfilePicChange}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
 
           {!editing ? (
             <div className="space-y-4 text-lg text-gray-300">
