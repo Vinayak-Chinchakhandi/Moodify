@@ -5,18 +5,24 @@ import { auth } from "../firebase/firebase";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(undefined); // undefined = still checking login
+  const [user, setUser] = useState(undefined);  
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+
+      // 🔥 Do NOT set localStorage here
       setUser(currentUser || null);
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 
-  const logout = () => signOut(auth);
+  const logout = () => {
+    localStorage.removeItem("moodifyLoggedIn");  // only on manual logout
+    return signOut(auth);
+  };
 
   return (
     <AuthContext.Provider value={{ user, logout, loading }}>

@@ -18,7 +18,7 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("✅ Firebase login successful:", user.email);
-
+      localStorage.setItem("moodifyLoggedIn","true");
       // Navigate to Home
       navigate("/home");
     } catch (error) {
