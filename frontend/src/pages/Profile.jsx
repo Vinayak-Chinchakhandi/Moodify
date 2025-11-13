@@ -5,7 +5,7 @@ import Dropdown from "../components/Dropdown";
 import { auth, db, storage } from "../firebase/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
-import { AiOutlineCamera } from "react-icons/ai"; // pencil/camera icon
+import { AiOutlineCamera } from "react-icons/ai";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const Profile = () => {
 
   const languageOptions = ["Kannada", "English", "Hindi", "Telugu", "Tamil", "Malayalam"];
 
-  // Load current user info from Firestore on mount
+  // ✅ Load user info from Firestore
   useEffect(() => {
     const fetchUser = async () => {
       if (!auth.currentUser) return;
@@ -52,9 +52,7 @@ const Profile = () => {
 
     try {
       const userRef = doc(db, "users", auth.currentUser.uid);
-      await updateDoc(userRef, {
-        ...form,
-      });
+      await updateDoc(userRef, { ...form });
       setUser(form);
       setEditing(false);
       alert("✅ Profile updated successfully!");
@@ -66,6 +64,7 @@ const Profile = () => {
 
   const handleLogout = () => navigate("/login");
 
+  // ✅ Upload profile picture to Firebase Storage + Save URL to Firestore
   const handleProfilePicChange = async (e) => {
     if (!e.target.files[0] || !auth.currentUser) return;
     const file = e.target.files[0];
@@ -82,7 +81,14 @@ const Profile = () => {
       },
       async () => {
         const url = await getDownloadURL(uploadTask.snapshot.ref);
-        setForm({ ...form, profilePic: url });
+
+        // ✅ Save photo URL to Firestore immediately
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        await updateDoc(userRef, { profilePic: url });
+
+        // ✅ Update state instantly for immediate preview
+        setForm((prev) => ({ ...prev, profilePic: url }));
+        setUser((prev) => ({ ...prev, profilePic: url }));
         setUploading(false);
       }
     );
@@ -102,6 +108,7 @@ const Profile = () => {
         >
           <h2 className="text-4xl font-extrabold mb-6 gradient-text">Your Profile 👤</h2>
 
+          {/* ✅ Profile Picture + Camera Icon */}
           <div className="relative w-32 h-32 mx-auto mb-6">
             <img
               src={form.profilePic || "/assets/default-avatar.png"}
@@ -124,8 +131,12 @@ const Profile = () => {
                 />
               </label>
             )}
+            {uploading && (
+              <p className="text-sm text-gray-400 mt-2 animate-pulse">Uploading...</p>
+            )}
           </div>
 
+          {/* ✅ View / Edit Sections */}
           {!editing ? (
             <div className="space-y-4 text-lg text-gray-300">
               <p>

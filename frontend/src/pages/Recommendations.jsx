@@ -70,13 +70,14 @@ const Recommendations = () => {
 
   return (
     <PageWrapper>
-      <div className="flex flex-col items-center justify-center min-h-screen text-white px-6 py-10 text-center">
-        <div className="relative z-10 w-full max-w-5xl glass-card p-10 backdrop-blur-2xl border border-white/10 rounded-2xl">
-          <h2 className="text-4xl font-extrabold mb-6 gradient-text">
+      <div className="flex flex-col items-center justify-center min-h-screen text-white px-2 py-4 text-center">
+        {/* 🎧 Recommendation Container */}
+        <div className="relative z-10 w-full max-w-4xl glass-card p-2.5 backdrop-blur-2xl border border-white/10 rounded-xl">
+          <h2 className="text-3xl font-extrabold mb-3 gradient-text">
             Your Recommended Songs 🎵
           </h2>
 
-          <p className="text-gray-300 mb-8">
+          <p className="text-gray-300 mb-4 text-sm">
             Based on your{" "}
             {genre ? (
               <span className="text-cyan-400">Genre: {genre}</span>
@@ -92,31 +93,30 @@ const Recommendations = () => {
             )}
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {/* 🎶 Recommended Songs Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-1.5 gap-y-3 place-items-center justify-items-center">
             {recommendedSongs.map((song) => (
               <SongCard
                 key={song.id}
                 title={song.title}
                 artist={song.artist}
                 cover={song.cover}
-                onAddToPlaylist={(playlistName) => addToPlaylist(song, playlistName)}
-                onPlayPause={() => {}}
               />
             ))}
           </div>
 
-          <div className="mt-8 flex justify-center w-full">
-            <div className="w-full max-w-lg">
-              <div className="mx-auto">
-                <AudioPlayer songs={recommendedSongs} />
-              </div>
+          {/* 🔊 Audio Player */}
+          <div className="mt-4 flex justify-center w-full">
+            <div className="w-full max-w-sm flex justify-center">
+              <AudioPlayer songs={recommendedSongs} />
             </div>
           </div>
 
-          <div className="flex justify-center mt-10">
+          {/* 🔘 Back Button */}
+          <div className="flex justify-center mt-5">
             <button
               onClick={handleBack}
-              className="px-8 py-3 rounded-full font-semibold bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition-transform shadow-[0_0_25px_rgba(255,0,255,0.3),0_0_45px_rgba(0,255,255,0.3)]"
+              className="px-6 py-2.5 rounded-full font-semibold bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,0,255,0.3),0_0_35px_rgba(0,255,255,0.3)] text-sm"
             >
               ⬅ Back
             </button>
@@ -125,6 +125,7 @@ const Recommendations = () => {
       </div>
     </PageWrapper>
   );
+
 };
 
 export default Recommendations;
