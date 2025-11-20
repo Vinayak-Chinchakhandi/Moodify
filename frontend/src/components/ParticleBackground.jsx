@@ -1,53 +1,53 @@
-// import React, { useMemo } from "react";
+import React, { useMemo } from "react";
 
-// const ParticleBackground = () => {
-//   // 🎶 Musical notes & neon colors (generated once)
-//   const notes = useMemo(() => {
-//     const symbols = ["🎵", "🎶", "♩", "♪", "♬"];
-//     const colors = ["#00FFFF", "#FF00FF", "#FFD700", "#00FF9C", "#FF6EC7"];
-//     return Array.from({ length: 25 }).map((_, i) => ({
-//       id: i,
-//       x: Math.random() * 100,
-//       y: Math.random() * 100,
-//       color: colors[Math.floor(Math.random() * colors.length)],
-//       symbol: symbols[Math.floor(Math.random() * symbols.length)],
-//       duration: 8 + Math.random() * 6,
-//       delay: Math.random() * 5,
-//     }));
-//   }, []);
+const ParticleBackground = () => {
+  // 🎶 Musical notes & neon colors (generated once)
+  const notes = useMemo(() => {
+    const symbols = ["🎵", "🎶", "♩", "♪", "♬"];
+    const colors = ["#00FFFF", "#FF00FF", "#FFD700", "#00FF9C", "#FF6EC7"];
+    return Array.from({ length: 25 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      symbol: symbols[Math.floor(Math.random() * symbols.length)],
+      duration: 8 + Math.random() * 6,
+      delay: Math.random() * 5,
+    }));
+  }, []);
 
-//   return (
-//     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-[radial-gradient(circle_at_center,#0a0a1a,#000)]">
-//       {notes.map((n) => (
-//         <span
-//           key={n.id}
-//           style={{
-//             position: "absolute",
-//             top: `${n.y}%`,
-//             left: `${n.x}%`,
-//             fontSize: "28px",
-//             color: n.color,
-//             filter: `drop-shadow(0 0 10px ${n.color})`,
-//             animation: `floatNotes ${n.duration}s ease-in-out ${n.delay}s infinite`,
-//             opacity: 0.9,
-//           }}
-//         >
-//           {n.symbol}
-//         </span>
-//       ))}
+  return (
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-[radial-gradient(circle_at_center,#0a0a1a,#000)]">
+      {notes.map((n) => (
+        <span
+          key={n.id}
+          style={{
+            position: "absolute",
+            top: `${n.y}%`,
+            left: `${n.x}%`,
+            fontSize: "28px",
+            color: n.color,
+            filter: `drop-shadow(0 0 10px ${n.color})`,
+            animation: `floatNotes ${n.duration}s ease-in-out ${n.delay}s infinite`,
+            opacity: 0.9,
+          }}
+        >
+          {n.symbol}
+        </span>
+      ))}
 
-//       <style>{`
-//         @keyframes floatNotes {
-//           0% { transform: translateY(0px); opacity: 0.7; }
-//           50% { transform: translateY(-100px) scale(1.1); opacity: 1; }
-//           100% { transform: translateY(-200px); opacity: 0.3; }
-//         }
-//       `}</style>
-//     </div>
-//   );
-// };
+      <style>{`
+        @keyframes floatNotes {
+          0% { transform: translateY(0px); opacity: 0.7; }
+          50% { transform: translateY(-100px) scale(1.1); opacity: 1; }
+          100% { transform: translateY(-200px); opacity: 0.3; }
+        }
+      `}</style>
+    </div>
+  );
+};
 
-// export default ParticleBackground;
+export default ParticleBackground;
 
 
 
@@ -116,19 +116,19 @@
 
 
 
-import introVideo from "../assets/intro1.mp4";
-const ParticleBackground = () => {
-  return (
-    <video
-      autoPlay
-      loop
-      muted
-      playsInline
-      className="fixed inset-0 w-full h-full object-cover z-0"
-    >
-      <source src={introVideo} type="video/mp4" />
-    </video>
-  );
-};
+// import introVideo from "../assets/intro1.mp4";
+// const ParticleBackground = () => {
+//   return (
+//     <video
+//       autoPlay
+//       loop
+//       muted
+//       playsInline
+//       className="fixed inset-0 w-full h-full object-cover z-0"
+//     >
+//       <source src={introVideo} type="video/mp4" />
+//     </video>
+//   );
+// };
 
-export default ParticleBackground;
+// export default ParticleBackground;
