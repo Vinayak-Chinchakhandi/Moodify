@@ -3,8 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
 import Dropdown from "../components/Dropdown";
 import { auth, db, storage } from "../firebase/firebase";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import {
+  updatePassword,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  EmailAuthProvider,
+  deleteUser,
+  GoogleAuthProvider,
+  linkWithPopup,
+  updateProfile,
+  unlink,
+} from "firebase/auth";
+import { doc, updateDoc, getDoc, deleteDoc } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { AiOutlineCamera } from "react-icons/ai";
 
 const Profile = () => {
@@ -13,7 +24,6 @@ const Profile = () => {
   const [user, setUser] = useState({
     name: "",
     email: "",
-    password: "********",
     language1: "English",
     language2: "Kannada",
     language3: "Hindi",
@@ -24,183 +34,259 @@ const Profile = () => {
   const [form, setForm] = useState(user);
   const [uploading, setUploading] = useState(false);
 
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
   const languageOptions = ["Kannada", "English", "Hindi", "Telugu", "Tamil", "Malayalam"];
 
-  // ✅ Load user info from Firestore
+  const [providerIds, setProviderIds] = useState([]);
+  const googleProvider = new GoogleAuthProvider();
+
+  // LOAD USER
   useEffect(() => {
-    const fetchUser = async () => {
+    const loadUser = async () => {
       if (!auth.currentUser) return;
 
-      const docRef = doc(db, "users", auth.currentUser.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setUser((prev) => ({ ...prev, ...data }));
-        setForm((prev) => ({ ...prev, ...data }));
+      const refDoc = doc(db, "users", auth.currentUser.uid);
+      const snap = await getDoc(refDoc);
+      if (snap.exists()) {
+        setUser((prev) => ({ ...prev, ...snap.data() }));
+        setForm((prev) => ({ ...prev, ...snap.data() }));
       }
-    };
 
-    fetchUser();
+      const pdata = auth.currentUser.providerData || [];
+      setProviderIds(pdata.map((p) => p.providerId));
+    };
+    loadUser();
   }, []);
 
-  const handleEdit = () => setEditing(true);
+  const isGoogleLinked = providerIds.includes("google.com");
+  const isEmailPassword = providerIds.includes("password");
 
-  const handleCancel = () => {
-    setEditing(false);
-    setForm(user);
-  };
-
+  // SAVE PROFILE
   const handleSave = async (e) => {
     e.preventDefault();
     if (!auth.currentUser) return;
 
-    try {
-      const userRef = doc(db, "users", auth.currentUser.uid);
-      await updateDoc(userRef, { ...form });
+    const uid = auth.currentUser.uid;
+    const updatedData = { ...form };
+    delete updatedData.email;
 
-      setUser(form);
+    try {
+      await updateDoc(doc(db, "users", uid), updatedData);
+
+      // PASSWORD HANDLING
+      if (newPassword.trim() !== "") {
+        if (isGoogleLinked && !isEmailPassword) {
+          await reauthenticateWithPopup(auth.currentUser, googleProvider);
+          await updatePassword(auth.currentUser, newPassword);
+          alert("Password added for Moodify login.");
+        } else if (isEmailPassword) {
+          if (!currentPassword.trim()) return alert("Enter current password.");
+          const cred = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+          await reauthenticateWithCredential(auth.currentUser, cred);
+          await updatePassword(auth.currentUser, newPassword);
+          alert("Password updated.");
+        }
+      }
+
+      setUser((prev) => ({ ...prev, ...updatedData }));
       setEditing(false);
-      alert("✅ Profile updated successfully!");
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      alert("❌ Failed to update profile.");
+      setCurrentPassword("");
+      setNewPassword("");
+
+      alert("Profile updated.");
+    } catch (err) {
+      alert(err.message);
     }
   };
 
-  // 🔴 Works with your ProtectedRoute logic
-  const handleLogout = () => {
-    localStorage.removeItem("moodifyLoggedIn");
-    navigate("/login");
-  };
-
-  // ✅ Upload profile picture to Firebase
+  // PROFILE PIC UPLOAD
   const handleProfilePicChange = async (e) => {
-    if (!e.target.files[0] || !auth.currentUser) return;
-
+    if (!e.target.files?.[0] || !auth.currentUser) return;
     const file = e.target.files[0];
-    const storageRef = ref(storage, `profilePics/${auth.currentUser.uid}`);
 
+    const storageRef = ref(storage, `profilePics/${auth.currentUser.uid}`);
     setUploading(true);
 
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
+    const task = uploadBytesResumable(storageRef, file);
+    task.on(
       "state_changed",
       null,
-      (err) => {
-        console.error("Upload error:", err);
-        setUploading(false);
-      },
+      () => setUploading(false),
       async () => {
-        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        const url = await getDownloadURL(task.snapshot.ref);
+        await updateDoc(doc(db, "users", auth.currentUser.uid), { profilePic: url });
 
-        const userRef = doc(db, "users", auth.currentUser.uid);
-        await updateDoc(userRef, { profilePic: url });
-
-        setForm((prev) => ({ ...prev, profilePic: url }));
-        setUser((prev) => ({ ...prev, profilePic: url }));
-
+        setUser((u) => ({ ...u, profilePic: url }));
+        setForm((u) => ({ ...u, profilePic: url }));
         setUploading(false);
       }
     );
   };
 
+  // LINK GOOGLE
+  const handleLinkGoogle = async () => {
+    try {
+      const result = await linkWithPopup(auth.currentUser, googleProvider);
+
+      // Attempt to determine the Google account email used in the popup
+      const googleEmail =
+        result?.additionalUserInfo?.profile?.email ||
+        result?.user?.providerData?.find((p) => p.providerId === "google.com")?.email ||
+        result?.user?.email;
+
+      const currentEmail = auth.currentUser?.email;
+
+      // If both emails exist and don't match, undo the link and inform user
+      if (googleEmail && currentEmail && googleEmail.toLowerCase() !== currentEmail.toLowerCase()) {
+        try {
+          await unlink(auth.currentUser, "google.com");
+        } catch (e) {
+          // unlink may fail if the provider wasn't attached; ignore
+        }
+
+        // refresh provider list
+        try {
+          await auth.currentUser.reload();
+          setProviderIds(auth.currentUser.providerData.map((p) => p.providerId));
+        } catch (e) {}
+
+        return alert("Account linking failed: Google account email does not match your registered email.");
+      }
+
+      // Try to read photo from result first, fallback to providerData
+      const providerPhoto =
+        result?.additionalUserInfo?.profile?.picture ||
+        result?.user?.photoURL ||
+        result?.user?.providerData?.find((p) => p.providerId === "google.com")?.photoURL;
+
+      if (providerPhoto) {
+        // update auth profile photoURL so auth.currentUser.photoURL is set
+        try {
+          await updateProfile(auth.currentUser, { photoURL: providerPhoto });
+        } catch (e) {
+          // non-fatal; continue to sync firestore/state
+        }
+
+        // persist to Firestore and local state
+        await updateDoc(doc(db, "users", auth.currentUser.uid), {
+          profilePic: providerPhoto,
+        });
+
+        setUser((u) => ({ ...u, profilePic: providerPhoto }));
+        setForm((u) => ({ ...u, profilePic: providerPhoto }));
+      }
+
+      // Refresh provider list and state
+      await auth.currentUser.reload();
+      setProviderIds(auth.currentUser.providerData.map((p) => p.providerId));
+
+      alert("Google linked successfully!");
+    } catch (err) {
+      alert(err.message);
+    }
+};
+
+  // DELETE ACCOUNT
+  const handleDeleteAccount = async () => {
+    const c = window.confirm("Delete your account permanently?");
+    if (!c) return;
+
+    const uid = auth.currentUser.uid;
+
+    try {
+      await deleteDoc(doc(db, "users", uid)).catch(() => {});
+      await deleteObject(ref(storage, `profilePics/${uid}`)).catch(() => {});
+      await deleteUser(auth.currentUser);
+
+      alert("Account deleted.");
+      navigate("/signup");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // LOGOUT CONFIRMATION
+  const handleLogout = () => {
+    const c = window.confirm("Are you sure you want to logout?");
+    if (!c) return;
+
+    localStorage.removeItem("moodifyLoggedIn");
+    navigate("/login");
+  };
+
   return (
     <PageWrapper>
-      <div className="flex flex-col items-center justify-center min-h-screen text-white px-6 py-10">
-        {/* ⭐ Card */}
-        <div className="relative z-10 w-full max-w-3xl glass-card text-center p-10 backdrop-blur-2xl border border-white/10 rounded-2xl">
+      <div className="flex flex-col items-center justify-center min-h-screen text-white">
 
-          <h2 className="text-4xl font-extrabold mb-6 gradient-text">
-            Your Profile 👤
-          </h2>
+        <div className="glass-card w-full max-w-3xl text-center p-10">
 
-          {/* ⭐ Profile Picture */}
+          <h2 className="text-4xl font-extrabold mb-6 gradient-text">Your Profile 👤</h2>
+
+          {/* PROFILE PIC */}
           <div className="relative w-32 h-32 mx-auto mb-6">
             <img
               src={form.profilePic || "/assets/default-avatar.png"}
-              alt="Profile"
               className="w-32 h-32 rounded-full border-4 border-cyan-400 object-cover"
             />
-            {editing && (
-              <label
-                htmlFor="profilePicInput"
-                className="absolute bottom-0 right-0 bg-cyan-500 text-white p-2 rounded-full cursor-pointer hover:bg-cyan-400 transition"
-              >
-                <AiOutlineCamera size={20} />
-                <input
-                  type="file"
-                  id="profilePicInput"
-                  accept="image/*"
-                  onChange={handleProfilePicChange}
-                  className="hidden"
-                />
-              </label>
-            )}
 
-            {uploading && (
-              <p className="text-sm text-gray-400 mt-2 animate-pulse">
-                Uploading...
-              </p>
+            {editing && (
+              <label htmlFor="pic" className="absolute bottom-0 right-0 bg-cyan-500 p-2 rounded-full cursor-pointer">
+                <AiOutlineCamera size={20} />
+                <input type="file" id="pic" className="hidden" onChange={handleProfilePicChange} />
+              </label>
             )}
           </div>
 
-          {/* ============================= */}
-          {/* ⭐⭐ VIEW MODE */}
-          {/* ============================= */}
+          {/* VIEW MODE */}
           {!editing ? (
-            <div className="space-y-4 text-lg text-gray-300">
-              <p>
-                <span className="font-semibold text-cyan-400">Name:</span> {user.name}
-              </p>
-              <p>
-                <span className="font-semibold text-pink-400">Email:</span> {user.email}
-              </p>
-              <p className="font-semibold text-orange-400">Preferred Languages:</p>
+            <>
+              <p className="text-gray-300 text-lg mb-4">Name: {user.name}</p>
+              <p className="text-gray-300 text-lg mb-6">Email: {user.email}</p>
 
-              <ul className="text-gray-400">
-                <li>1️⃣ {user.language1}</li>
-                <li>2️⃣ {user.language2}</li>
-                <li>3️⃣ {user.language3}</li>
-              </ul>
+              <h3 className="text-xl font-semibold text-cyan-300 mb-3">🎧 Language Preferences</h3>
+              <p className="text-gray-300 mb-6">
+                {user.language1}, {user.language2}, {user.language3}
+              </p>
 
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
+              {/* 2x2 GRID BUTTONS */}
+              <div className="grid grid-cols-2 gap-4 place-items-center mt-6">
+
                 <button
-                  onClick={handleEdit}
-                  className="px-6 py-3 rounded-full font-semibold bg-gradient-to-r 
-                  from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition-transform"
+                  onClick={() => setEditing(true)}
+                  className="px-6 py-3 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition"
                 >
-                  ✏️ Edit Profile
+                  Edit Profile
+                </button>
+
+                <button
+                  onClick={handleDeleteAccount}
+                  className="px-6 py-3 rounded-full bg-gradient-to-r from-red-600 to-orange-500 hover:scale-105 transition"
+                >
+                  Delete Account
                 </button>
 
                 <button
                   onClick={handleLogout}
-                  className="px-6 py-3 rounded-full font-semibold bg-gradient-to-r 
-                  from-pink-600 to-red-500 hover:scale-105 transition-transform"
+                  className="px-6 py-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
                 >
-                  🚪 Logout
+                  Logout
                 </button>
 
                 <Link
                   to="/home"
-                  className="px-6 py-3 rounded-full font-semibold bg-white/10 
-                  border border-white/20 hover:bg-white/20 transition"
+                  className="px-6 py-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
                 >
-                  ⬅ Back to Home
+                  Back to Home
                 </Link>
               </div>
-            </div>
+            </>
           ) : (
-            /* ============================= */
-            /* ⭐⭐ NEW EDIT MODE LAYOUT ⭐⭐ */
-            /* ============================= */
-            <form
-              onSubmit={handleSave}
-              className="w-full max-w-3xl mx-auto text-gray-300 grid grid-cols-1 gap-8 mt-4"
-            >
-              {/* NAME + EMAIL side-by-side */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <>
+              {/* EDIT MODE */}
+              <form onSubmit={handleSave} className="space-y-6 mt-4">
+
                 {/* NAME */}
                 <div className="rounded-lg p-[2px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
                   <input
@@ -208,76 +294,107 @@ const Profile = () => {
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="Your Name"
-                    className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white placeholder-gray-300 
-                    focus:outline-none focus:ring-2 focus:ring-cyan-400 transition"
-                    required
+                    className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white placeholder-gray-300 focus:outline-none"
                   />
                 </div>
 
-                {/* EMAIL */}
-                <div className="rounded-lg p-[2px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="Your Email"
-                    className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white placeholder-gray-300 
-                    focus:outline-none focus:ring-2 focus:ring-cyan-400 transition"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* PASSWORD full width */}
-              <div className="rounded-lg p-[2px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
+                {/* EMAIL (view only) */}
                 <input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  placeholder="Your Password"
-                  className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white placeholder-gray-300 
-                  focus:outline-none focus:ring-2 focus:ring-cyan-400 transition"
-                  required
+                  type="email"
+                  value={form.email}
+                  disabled
+                  className="w-full px-4 py-3 rounded-lg bg-white/10 text-gray-300 cursor-not-allowed"
                 />
-              </div>
 
-              {/* LANGUAGES */}
-              <div className="text-center">
-                <h3 className="text-xl font-semibold text-cyan-300 mb-3">
-                  🎧 Language Preferences
-                </h3>
+                {/* PASSWORD SECTION */}
+                {isGoogleLinked && !isEmailPassword ? (
+                  <div className="text-gray-300 text-sm bg-white/5 p-3 rounded-lg border border-white/10">
+                    You are signed in with Google.
+                    <br />
+                    Adding a password lets you also login using email next time.
+                    <div className="rounded-lg p-[2px] mt-3 bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
+                      <input
+                        type="password"
+                        placeholder="Set new password for Moodify"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="rounded-lg p-[2px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
+                      <input
+                        type="password"
+                        placeholder="Current password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {["language1", "language2", "language3"].map((langKey) => (
+                    <div className="rounded-lg p-[2px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
+                      <input
+                        type="password"
+                        placeholder="New password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* LANGUAGE DROPDOWNS */}
+                <h3 className="text-xl font-semibold text-cyan-300">🎧 Language Preferences</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {["language1", "language2", "language3"].map((key) => (
                     <Dropdown
-                      key={langKey}
-                      value={form[langKey]}
-                      onChange={(val) => setForm({ ...form, [langKey]: val })}
+                      key={key}
+                      value={form[key]}
+                      onChange={(val) => setForm({ ...form, [key]: val })}
                       options={languageOptions}
                     />
                   ))}
                 </div>
-              </div>
 
-              {/* BUTTONS */}
-              <div className="flex justify-center gap-6 mt-4">
-                <button
-                  type="submit"
-                  className="px-10 py-3 rounded-full font-semibold bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 
-                  hover:scale-105 transition-transform shadow-[0_0_25px_rgba(255,0,255,0.3)]"
-                >
-                  💾 Save
-                </button>
+                {/* GOOGLE LINK IN EDIT MODE */}
+                {!isGoogleLinked && (
+                  <div className="text-gray-300 bg-white/5 p-4 rounded-lg border border-white/10">
+                    <p className="mb-3 text-sm">
+                      Link Google to login using Google next time and sync your Google profile picture.
+                    </p>
 
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="px-10 py-3 rounded-full font-semibold bg-gray-600 hover:bg-gray-700 transition"
-                >
-                  ✖ Exit
-                </button>
-              </div>
-            </form>
+                    <button
+                      type="button"
+                      onClick={handleLinkGoogle}
+                      className="px-6 py-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
+                    >
+                      Link Google
+                    </button>
+                  </div>
+                )}
+
+                {/* BUTTONS */}
+                <div className="flex justify-center gap-6 mt-6">
+                  <button
+                    type="submit"
+                    className="px-10 py-3 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition"
+                  >
+                    💾 Save
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setEditing(false)}
+                    className="px-10 py-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
+                  >
+                    ✖ Cancel
+                  </button>
+                </div>
+              </form>
+            </>
           )}
         </div>
       </div>
