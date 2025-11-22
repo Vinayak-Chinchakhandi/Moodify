@@ -276,9 +276,9 @@ const Profile = () => {
 
                 <Link
                   to="/home"
-                  className="px-6 py-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
+                  className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all"
                 >
-                  Back to Home
+                  ⬅ Back to Home
                 </Link>
               </div>
             </>

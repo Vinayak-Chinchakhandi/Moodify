@@ -8,6 +8,9 @@ const Home = () => {
   const { logout } = useContext(AuthContext);
 
   const handleLogout = async () => {
+    const c = window.confirm("Are you sure you want to logout?");
+    if (!c) return;
+
     await logout(); // removes localStorage + firebase session
     window.location.href = "/login"; // HARD redirect → fixes all issues
   };
