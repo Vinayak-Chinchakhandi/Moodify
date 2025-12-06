@@ -300,6 +300,17 @@ MOODIFY/
 │   │   ├── huggingface.service.js
 │   │   └── youtube.service.js
 │   │
+│   │── middlewares/
+│   │   ├── error.middleware.js
+│   │   └── async.middleware.js
+│   │
+│   │── utils/
+│   │   ├── logger.js
+│   │   └── response.js
+│   │
+│   │── config/
+│   │   └── axiosInstance.js
+│   │
 │   ├──package.json
 │   └──package.lock.json
 │   
