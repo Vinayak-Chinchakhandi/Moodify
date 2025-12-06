@@ -1,24 +1,27 @@
-// backend/server.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
-// Load environment variables
+import artistsRoutes from "./routes/artists.routes.js";
+import moodRoutes from "./routes/mood.routes.js";
+import textRoutes from "./routes/text.routes.js";
+import youtubeRoutes from "./routes/youtube.routes.js";
+
 dotenv.config();
-
 const app = express();
 
-// Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Hello from Moodify Backend 👋 — Server is running successfully!");
-});
+// ROUTES
+app.use("/api/artists", artistsRoutes);
+app.use("/api/mood", moodRoutes);
+app.use("/api/text", textRoutes);
+app.use("/api/youtube", youtubeRoutes);
 
-// Start server
+// GLOBAL ERROR HANDLER
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));

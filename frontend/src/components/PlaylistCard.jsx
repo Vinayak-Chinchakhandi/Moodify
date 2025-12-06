@@ -47,29 +47,3 @@ const PlaylistCard = ({ title, cover, description, onPlay }) => {
 };
 
 export default PlaylistCard;
-
-
-
-
-
-
-
-//usage
-// import PlaylistCard from "./PlaylistCard";
-
-// const playlistData = {
-//   title: "Neon Beats",
-//   cover: "/images/neon-beats.jpg",
-//   description: "A mix of chill synth and upbeat electronic vibes.",
-// };
-
-// export default function PlaylistGrid() {
-//   return (
-//     <div className="flex flex-wrap gap-6 justify-center">
-//       <PlaylistCard
-//         {...playlistData}
-//         onPlay={() => console.log("Playing playlist:", playlistData.title)}
-//       />
-//     </div>
-//   );
-// }
