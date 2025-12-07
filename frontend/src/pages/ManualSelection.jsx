@@ -18,13 +18,16 @@ const ManualSelection = () => {
       return;
     }
 
-    const selectedMood = mood || "Custom";
+    // mood is required for search API; if not selected, use "Neutral"
+    const selectedMood = mood && mood !== "-- Select Mood --" ? mood : "Neutral";
+    const selectedGenre = genre && genre !== "-- Choose Genre --" ? genre : "";
+
     navigate("/recommendations", {
       state: {
         source: "manual",
         mood: selectedMood,
-        genre,
-        artist,
+        genre: selectedGenre,
+        artist: artist || "",
       },
     });
   };

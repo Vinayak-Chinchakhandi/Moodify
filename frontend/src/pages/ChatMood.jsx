@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { auth, db } from "../firebase/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import PageWrapper from "../components/PageWrapper";
 
 const ChatMood = () => {
@@ -85,7 +87,23 @@ const ChatMood = () => {
 
   const goToRecommendations = () => {
     const moodToSend = detectedMood || "Neutral";
-    navigate("/recommendations", { state: { source: "chat", mood: moodToSend } });
+    (async () => {
+      let langs = [];
+      try {
+        if (auth.currentUser) {
+          const userRef = doc(db, "users", auth.currentUser.uid);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            langs = [data.language1, data.language2, data.language3].filter(Boolean);
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching user languages:", e);
+      }
+
+      navigate("/recommendations", { state: { source: "chat", mood: moodToSend, languages: langs } });
+    })();
   };
 
   return (

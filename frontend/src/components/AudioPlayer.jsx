@@ -1,18 +1,29 @@
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipBack, SkipForward, Repeat } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { Play, Pause, SkipBack, SkipForward, Heart } from "lucide-react";
 
-const AudioPlayer = ({ playlist = [] }) => {
+const AudioPlayer = ({ playlist = [], onLike, onAddPlaylist }) => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
   const [loop, setLoop] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
   const audioRef = useRef(null);
 
   const currentSong =
     playlist.length > 0 ? playlist[currentIndex] : { title: "No song", artist: "", src: "" };
+
+  // Track when song changes and reset like state
+  useEffect(() => {
+    setIsLiked(currentSong.isLiked || false);
+  }, [currentIndex, currentSong]);
+
+  // handleNext stable callback
+  const handleNext = useCallback(() => {
+    if (playlist.length === 0) return;
+    setCurrentIndex((prev) => (prev + 1) % playlist.length);
+  }, [playlist.length]);
 
   // ✅ useEffect always called (no conditional)
   useEffect(() => {
@@ -20,8 +31,7 @@ const AudioPlayer = ({ playlist = [] }) => {
     if (!audio) return;
 
     const updateProgress = () => {
-      setCurrentTime(audio.currentTime);
-      setProgress((audio.currentTime / audio.duration) * 100 || 0);
+      // progress tracked but kept minimal for compact player
     };
 
     const handleLoadedMetadata = () => setDuration(audio.duration);
@@ -40,44 +50,44 @@ const AudioPlayer = ({ playlist = [] }) => {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [currentIndex, loop]);
+  }, [currentIndex, loop, handleNext]);
 
   const handlePlayPause = () => {
-    const audio = audioRef.current;
-    if (!audio || !currentSong.src) return;
-    if (isPlaying) audio.pause();
-    else audio.play();
-    setIsPlaying(!isPlaying);
+    if (!currentSong.videoId) return;
+    
+    // Navigate to Stream page to play the song
+    navigate("/stream", { state: { song: currentSong } });
+    setIsPlaying(true);
   };
 
-  const handleNext = () => {
-    if (playlist.length === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % playlist.length);
-    setProgress(0);
-  };
-
+  // handleNext is declared above
   const handlePrev = () => {
     if (playlist.length === 0) return;
     setCurrentIndex((prev) => (prev === 0 ? playlist.length - 1 : prev - 1));
-    setProgress(0);
-  };
-
-  const handleSeek = (e) => {
-    const audio = audioRef.current;
-    if (!audio || !audio.duration) return;
-    const newTime = (e.target.value / 100) * audio.duration;
-    audio.currentTime = newTime;
-    setProgress(e.target.value);
   };
 
   const toggleLoop = () => setLoop((prev) => !prev);
 
-  const formatTime = (time) => {
-    if (isNaN(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+  const handleLike = async () => {
+    if (!currentSong.videoId || !onLike) return;
+    try {
+      await onLike(currentSong, !isLiked);
+      setIsLiked(!isLiked);
+    } catch (err) {
+      console.error("Like failed:", err);
+    }
   };
+
+  const handlePlaylistAdd = () => {
+    if (!currentSong.videoId || !onAddPlaylist) return;
+    try {
+      onAddPlaylist(currentSong);
+    } catch (err) {
+      console.error("Playlist add failed:", err);
+    }
+  };
+
+  // formatTime intentionally removed - not used in compact player
 
   // ✅ Now we return early *after* hooks — safe for ESLint
   if (playlist.length === 0) {
@@ -92,65 +102,61 @@ const AudioPlayer = ({ playlist = [] }) => {
   }
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full max-w-md glass-card p-6 rounded-2xl border border-white/10 text-white backdrop-blur-2xl shadow-[0_0_25px_rgba(255,0,255,0.2)] hover:shadow-[0_0_40px_rgba(0,255,255,0.3)] transition-all">
-      {/* 🎵 Song Info */}
-      <h2 className="text-2xl font-bold mb-1 gradient-text text-center">
+    <div className="relative flex flex-col items-center justify-center w-full max-w-sm glass-card p-3 rounded-lg border border-white/10 text-white backdrop-blur-2xl shadow-[0_0_15px_rgba(255,0,255,0.2)]">
+      {/* 🎵 Song Info - Compact */}
+      <h3 className="text-sm font-bold mb-0.5 gradient-text text-center truncate w-full">
         {currentSong.title}
-      </h2>
-      <p className="text-gray-400 text-sm mb-4">{currentSong.artist}</p>
+      </h3>
+      <p className="text-gray-400 text-xs mb-2 truncate w-full text-center">{currentSong.artist}</p>
 
-      {/* 🎶 Progress Bar */}
-      <input
-        type="range"
-        min="0"
-        max="100"
-        value={progress}
-        onChange={handleSeek}
-        className="w-full accent-cyan-400 cursor-pointer"
-      />
-
-      {/* ⏱ Time Display */}
-      <div className="flex justify-between text-xs text-gray-400 w-full mt-1">
-        <span>{formatTime(currentTime)}</span>
-        <span>{formatTime(duration)}</span>
-      </div>
-
-      {/* 🔘 Controls */}
-      <div className="flex items-center justify-center gap-6 mt-4">
+      {/* 🔘 Controls - Compact */}
+      <div className="flex items-center justify-center gap-3 mt-2">
         <button onClick={handlePrev} className="hover:scale-110 transition-transform text-cyan-400">
-          <SkipBack size={26} />
+          <SkipBack size={18} />
         </button>
         <button
           onClick={handlePlayPause}
-          className="bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 p-4 rounded-full shadow-[0_0_25px_rgba(255,0,255,0.3)] hover:scale-110 transition-transform"
+          className="bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 p-2 rounded-full shadow-[0_0_15px_rgba(255,0,255,0.3)] hover:scale-110 transition-transform"
         >
-          {isPlaying ? <Pause size={30} /> : <Play size={30} />}
+          {isPlaying ? <Pause size={20} /> : <Play size={20} />}
         </button>
         <button onClick={handleNext} className="hover:scale-110 transition-transform text-pink-400">
-          <SkipForward size={26} />
+          <SkipForward size={18} />
         </button>
       </div>
 
-      {/* 🔁 Loop Toggle */}
-      <button
-        onClick={toggleLoop}
-        className={`mt-4 text-sm flex items-center gap-2 ${
-          loop ? "text-pink-400" : "text-gray-400"
-        } hover:text-cyan-400 transition-colors`}
-      >
-        <Repeat size={18} />
-        {loop ? "Loop On" : "Loop Off"}
-      </button>
+      {/* ❤️ Like & Playlist Buttons - Compact */}
+      {onLike && onAddPlaylist && (
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <button
+            onClick={handleLike}
+            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold transition-all ${
+              isLiked
+                ? "bg-pink-500/30 border border-pink-400 text-pink-300"
+                : "bg-white/10 border border-white/20 text-gray-300 hover:border-pink-400"
+            }`}
+          >
+            <Heart size={14} fill={isLiked ? "currentColor" : "none"} />
+            {isLiked ? "Liked" : "Like"}
+          </button>
+          <button
+            onClick={handlePlaylistAdd}
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-white/10 border border-white/20 text-gray-300 hover:border-cyan-400 hover:text-cyan-300 transition-all"
+          >
+            + Add
+          </button>
+        </div>
+      )}
 
-      {/* 🎧 Audio Element */}
-      <audio ref={audioRef} src={currentSong.src} preload="metadata" />
+      {/* 🎧 Audio Element - Hidden (YouTube videos don't have direct audio) */}
+      <audio ref={audioRef} preload="metadata" />
 
       <style>{`
         .glass-card {
           background: rgba(255, 255, 255, 0.05);
-          border-radius: 1rem;
+          border-radius: 0.5rem;
           border: 1px solid rgba(255, 255, 255, 0.15);
-          box-shadow: 0 0 25px rgba(255, 0, 255, 0.15);
+          box-shadow: 0 0 15px rgba(255, 0, 255, 0.15);
         }
         .gradient-text {
           background: linear-gradient(to right, #00ffff, #ff00ff, #ff6600);

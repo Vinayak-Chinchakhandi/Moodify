@@ -11,6 +11,7 @@ import History from "./pages/History";
 import Profile from "./pages/Profile";
 import ManualSelection from "./pages/ManualSelection";
 import Intro from "./pages/Intro";
+import Stream from "./pages/Stream";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 
@@ -31,6 +32,7 @@ function App() {
           <Route path="/mood-detection" element={<ProtectedRoute><MoodDetection /></ProtectedRoute>} />
           <Route path="/chat-mood" element={<ProtectedRoute><ChatMood /></ProtectedRoute>} />
           <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
+          <Route path="/stream" element={<ProtectedRoute><Stream /></ProtectedRoute>} />
           <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
           <Route path="/playlists" element={<ProtectedRoute><Playlists /></ProtectedRoute>} />
           <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
