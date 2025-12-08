@@ -218,3 +218,65 @@ export const getUserHistory = async (userId) => {
     throw err;
   }
 };
+
+/**
+ * Remove a song from a playlist
+ */
+export const removeFromPlaylist = async (userId, playlistName, videoId) => {
+  try {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) return { success: false };
+
+    const playlists = userSnap.data().playlists || [];
+    const idx = playlists.findIndex((p) => p.name === playlistName);
+
+    if (idx >= 0) {
+      playlists[idx].songs = (playlists[idx].songs || []).filter(
+        (s) => s.videoId !== videoId
+      );
+      await updateDoc(userRef, { playlists });
+      return { success: true };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.error("Remove from playlist error:", err);
+    throw err;
+  }
+};
+
+/**
+ * Delete an entire playlist
+ */
+export const removePlaylist = async (userId, playlistName) => {
+  try {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) return { success: false };
+
+    let playlists = userSnap.data().playlists || [];
+    playlists = playlists.filter((p) => p.name !== playlistName);
+    await updateDoc(userRef, { playlists });
+    return { success: true };
+  } catch (err) {
+    console.error("Remove playlist error:", err);
+    throw err;
+  }
+};
+
+/**
+ * Clear user's history
+ */
+export const clearHistory = async (userId) => {
+  try {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, { history: [] });
+    return { success: true };
+  } catch (err) {
+    console.error("Clear history error:", err);
+    throw err;
+  }
+};

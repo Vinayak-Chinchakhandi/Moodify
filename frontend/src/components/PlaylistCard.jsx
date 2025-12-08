@@ -1,8 +1,8 @@
 import React from "react";
-import { Play } from "lucide-react";
+import { Play, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const PlaylistCard = ({ title, cover, description, onPlay, song }) => {
+const PlaylistCard = ({ title, cover, description, onPlay, song, showDelete = false, onDelete }) => {
   const navigate = useNavigate();
 
   const resolvedTitle = title || song?.title || song?.name || "Unknown";
@@ -32,6 +32,16 @@ const PlaylistCard = ({ title, cover, description, onPlay, song }) => {
           alt={resolvedTitle}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
         />
+        {/* 🗑️ Delete button */}
+        {showDelete && onDelete && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            className="absolute top-2 right-2 z-20 p-2 rounded-full bg-black/60 hover:bg-red-600 transition-colors"
+            title="Remove"
+          >
+            <Trash size={16} className="text-white" />
+          </button>
+        )}
         {/* 🔘 Play Button Overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300">
           <button

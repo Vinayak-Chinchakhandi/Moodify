@@ -5,6 +5,7 @@ import PlaylistCard from "../components/PlaylistCard";
 import AudioPlayer from "../components/AudioPlayer";
 import { auth, db } from "../firebase/firebase";
 import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { removeFromFavorites } from "../services/firestoreService";
 
 const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
@@ -42,7 +43,22 @@ const Favorites = () => {
           {/* === 🎵 Favorites Grid === */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {favorites.length > 0 ? (
-              favorites.map((song, index) => <PlaylistCard key={index} song={song} />)
+              favorites.map((song, index) => (
+                <PlaylistCard
+                  key={index}
+                  song={song}
+                  showDelete={true}
+                  onDelete={async () => {
+                    if (!auth.currentUser) return;
+                    try {
+                      await removeFromFavorites(auth.currentUser.uid, song.videoId);
+                      // local state will update via onSnapshot listener
+                    } catch (err) {
+                      console.error("Failed to remove favorite:", err);
+                    }
+                  }}
+                />
+              ))
             ) : (
               <p className="text-gray-400 col-span-full">No favorites yet. Start adding your favorite songs! 🎵</p>
             )}

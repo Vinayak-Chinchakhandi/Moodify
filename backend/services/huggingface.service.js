@@ -32,7 +32,7 @@ async function callHFModel(model, buffer) {
 
   try {
     const response = await axios.post(
-      `https://api-inference.huggingface.co/models/${model}`,
+      `https://router.huggingface.co/hf-inference/models/${model}`,
       buffer,
       {
         headers: {

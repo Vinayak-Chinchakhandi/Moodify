@@ -5,6 +5,7 @@ import PlaylistCard from "../components/PlaylistCard";
 import AudioPlayer from "../components/AudioPlayer";
 import { auth, db } from "../firebase/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
+import { clearHistory } from "../services/firestoreService";
 
 const History = () => {
   const [history, setHistory] = useState([]);
@@ -38,15 +39,36 @@ const History = () => {
           </p>
 
           {/* 🎶 History Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {history.length > 0 ? (
-              history.map((song, index) => <PlaylistCard key={index} song={song} />)
-            ) : (
-              <p className="text-gray-400 col-span-full">
-                No recently played songs yet. Start listening to add to your history! 🎵
-              </p>
-            )}
-          </div>
+            <div className="flex items-center justify-between mb-6">
+              <div />
+              {history.length > 0 && (
+                <button
+                  onClick={async () => {
+                    if (!auth.currentUser) return;
+                    try {
+                      await clearHistory(auth.currentUser.uid);
+                    } catch (err) {
+                      console.error("Failed to clear history:", err);
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-full shadow-md hover:opacity-90"
+                >
+                  Clear History
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {history.length > 0 ? (
+                history.map((song, index) => (
+                  <PlaylistCard key={index} song={song} />
+                ))
+              ) : (
+                <p className="text-gray-400 col-span-full">
+                  No recently played songs yet. Start listening to add to your history! 🎵
+                </p>
+              )}
+            </div>
 
           {/* 🎧 Audio Player */}
           {history.length > 0 && (

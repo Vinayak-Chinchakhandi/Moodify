@@ -5,6 +5,7 @@ import PlaylistCard from "../components/PlaylistCard";
 import AudioPlayer from "../components/AudioPlayer";
 import { auth, db } from "../firebase/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
+import { removeFromPlaylist, removePlaylist } from "../services/firestoreService";
 
 const Playlists = () => {
   const [playlists, setPlaylists] = useState([]);
@@ -29,6 +30,7 @@ const Playlists = () => {
   // If a playlist is selected, show its songs
   if (selectedPlaylist) {
     const songs = selectedPlaylist.songs || [];
+    const playlistName = selectedPlaylist.name;
     return (
       <PageWrapper>
         <div className="flex flex-col items-center justify-center min-h-screen text-center px-6 pt-24 text-white">
@@ -42,9 +44,50 @@ const Playlists = () => {
             </p>
 
             {/* Songs Grid */}
+            <div className="flex items-center justify-between mb-6">
+              <div />
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    if (!auth.currentUser) return;
+                    try {
+                      await removePlaylist(auth.currentUser.uid, playlistName);
+                      setSelectedPlaylist(null);
+                    } catch (err) {
+                      console.error("Failed to delete playlist:", err);
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-full shadow-md hover:opacity-90"
+                >
+                  Delete Playlist
+                </button>
+                <button
+                  onClick={() => setSelectedPlaylist(null)}
+                  className="px-4 py-2 bg-gray-800 text-white rounded-full shadow-md"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {songs.length > 0 ? (
-                songs.map((song, index) => <PlaylistCard key={index} song={song} />)
+                songs.map((song, index) => (
+                  <PlaylistCard
+                    key={index}
+                    song={song}
+                    showDelete={true}
+                    onDelete={async () => {
+                      if (!auth.currentUser) return;
+                      try {
+                        await removeFromPlaylist(auth.currentUser.uid, playlistName, song.videoId);
+                        // Real-time listener will update UI
+                      } catch (err) {
+                        console.error("Failed to remove song from playlist:", err);
+                      }
+                    }}
+                  />
+                ))
               ) : (
                 <p className="text-gray-400 col-span-full">
                   No songs in this playlist yet. 🎵
