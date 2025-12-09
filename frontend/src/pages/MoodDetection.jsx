@@ -84,7 +84,7 @@ const MoodDetection = () => {
                   onClick={goToRecommendations}
                   className="px-8 py-3 rounded-full font-semibold bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition-transform"
                 >
-                  Recommend Songs 🎶
+                  Find Songs 🎶
                 </button>
 
                 <button

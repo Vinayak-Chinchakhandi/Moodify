@@ -126,7 +126,7 @@ const ManualSelection = () => {
               onClick={handleRecommend}
               className="px-8 py-3 rounded-full font-semibold bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition-transform shadow-[0_0_25px_rgba(255,0,255,0.3),0_0_45px_rgba(0,255,255,0.3)]"
             >
-              Recommend Songs 🎶
+              Find Songs 🎶
             </button>
 
             <Link

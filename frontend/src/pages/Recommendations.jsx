@@ -248,7 +248,7 @@ const Recommendations = () => {
         </div>
 
         <div className="fixed top-6 right-6 z-40">
-          <button onClick={handleBack} className="px-4 py-2 rounded-full text-sm font-semibold bg-white/10 border border-white/20 hover:bg-white/20 transition-all">⬅ Back</button>
+          <button onClick={handleBack} className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all">⬅ Back</button>
         </div>
 
         {playlistModal.show && playlistModal.song && (

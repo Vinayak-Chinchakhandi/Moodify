@@ -31,19 +31,19 @@ const Stream = () => {
     if (!curSong) return;
 
     // persist session info
-    try { sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(curSong)); } catch (e) {}
-    try { sessionStorage.setItem("moodifyCurrentPlaylist", JSON.stringify(curPlaylist || [])); } catch (e) {}
-    try { sessionStorage.setItem("moodifyCurrentIndex", String(curIndex || 0)); } catch (e) {}
+    try { sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(curSong)); } catch (e) { }
+    try { sessionStorage.setItem("moodifyCurrentPlaylist", JSON.stringify(curPlaylist || [])); } catch (e) { }
+    try { sessionStorage.setItem("moodifyCurrentIndex", String(curIndex || 0)); } catch (e) { }
 
     // Immediately pause background audio and persist current time.
-    try { window.dispatchEvent(new CustomEvent("moodify-enter-visual-stream", { detail: { song: curSong, playlist: curPlaylist, index: curIndex } })); } catch (err) {}
+    try { window.dispatchEvent(new CustomEvent("moodify-enter-visual-stream", { detail: { song: curSong, playlist: curPlaylist, index: curIndex } })); } catch (err) { }
 
     // ask background to store current time as well (it already does on enter)
-    try { window.dispatchEvent(new CustomEvent("moodify-get-current-time")); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent("moodify-get-current-time")); } catch (e) { }
 
     // cleanup: on unmount ask background to resume
     return () => {
-      try { window.dispatchEvent(new CustomEvent("moodify-exit-visual-stream", { detail: { resumeBackground: true } })); } catch (err) {}
+      try { window.dispatchEvent(new CustomEvent("moodify-exit-visual-stream", { detail: { resumeBackground: true } })); } catch (err) { }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [curSong, curPlaylist, curIndex]);
@@ -69,50 +69,59 @@ const Stream = () => {
     setPlayNow(true);
     setIframeKey(Date.now());
     // Also dispatch a control play to background guard (it will already be paused)
-    try { window.dispatchEvent(new CustomEvent("moodify-player-state", { detail: { isPlaying: false } })); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent("moodify-player-state", { detail: { isPlaying: false } })); } catch (e) { }
   };
 
   return (
     <PageWrapper>
       <div className="flex flex-col items-center justify-start min-h-screen text-white px-4 py-6 pb-32">
         <div className="w-full max-w-4xl mb-6 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="px-4 py-2 rounded-lg bg-white/10 border border-white/20 hover:bg-white/20 text-white transition-all text-sm font-medium">← Back</button>
+          <button onClick={() => navigate(-1)} className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all">
+            ← Back
+          </button>
         </div>
 
-        <div className="w-full max-w-4xl bg-black rounded-lg overflow-hidden shadow-2xl">
-          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-            <div id={containerId} className="absolute top-0 left-0 w-full h-full">
-              {/* iframe: reloads when iframeKey changes */}
-              <iframe
-                key={iframeKey}
-                title={curSong.title}
-                src={activeSrc}
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }}
-              />
+        {/* 🔥 Gradient Border Wrapper */}
+        <div className="w-full max-w-4xl rounded-2xl p-[3px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 shadow-2xl">
 
-              {/* Large centered Play button shown only when audible playback hasn't been started */}
-              {!playNow && (
-                <div className="absolute inset-0 flex items-center justify-center z-40">
-                  <button
-                    onClick={handleUserPlay}
-                    className="px-8 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xl font-semibold shadow-lg"
-                  >
-                    ▶ Play Video
-                  </button>
-                </div>
-              )}
+          {/* Inner actual video container */}
+          <div className="bg-black rounded-xl overflow-hidden">
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <div id={containerId} className="absolute top-0 left-0 w-full h-full">
+
+                {/* iframe stays untouched */}
+                <iframe
+                  key={iframeKey}
+                  title={curSong.title}
+                  src={activeSrc}
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }}
+                />
+
+                {/* Play Overlay stays the same */}
+                {!playNow && (
+                  <div className="absolute inset-0 flex items-center justify-center z-40">
+                    <button
+                      onClick={handleUserPlay}
+                      className="px-8 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xl font-semibold shadow-lg"
+                    >
+                      ▶ Play Video
+                    </button>
+                  </div>
+                )}
+
+              </div>
             </div>
           </div>
         </div>
 
         <div className="w-full max-w-4xl mt-6 px-4">
-          <h2 className="text-3xl font-bold text-white mb-2">{curSong.title}</h2>
-          <p className="text-gray-300 text-lg">{curSong.artist}</p>
+          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-cyan-400 via-pink-500 to-orange-400 bg-clip-text text-transparent">{curSong.title}</h2>
+          <p className="text-lg font-bold mb-2 bg-gradient-to-r from-cyan-400 via-pink-500 to-orange-400 bg-clip-text text-transparent">{curSong.artist}</p>
         </div>
       </div>
     </PageWrapper>

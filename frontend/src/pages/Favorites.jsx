@@ -35,7 +35,7 @@ const Favorites = () => {
           <div className="absolute top-6 left-6">
             <Link
               to="/home"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white transition-all shadow-lg hover:scale-110"
+              className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all"
               title="Back to Home"
             >
               ⬅
