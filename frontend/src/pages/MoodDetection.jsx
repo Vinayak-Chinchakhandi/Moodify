@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import PageWrapper from "../components/PageWrapper";
 import WebcamCapture from "../components/WebcamCapture";
 import { detectEmotionFromBlob } from "../utils/hfEmotionDetector";
 
@@ -57,7 +56,7 @@ const MoodDetection = () => {
   };
 
   return (
-    <PageWrapper>
+    <>
       <div className="flex flex-col items-center justify-center min-h-screen text-white px-4 py-8">
         <div className="relative z-10 w-full max-w-4xl glass-card p-8 text-center backdrop-blur-2xl border border-white/10 rounded-2xl">
           <h2 className="text-3xl md:text-4xl font-extrabold mb-4 gradient-text">
@@ -108,7 +107,7 @@ const MoodDetection = () => {
           </div>
         </div>
       </div>
-    </PageWrapper>
+    </>
   );
 };
 

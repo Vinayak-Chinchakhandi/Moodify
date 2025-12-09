@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import PageWrapper from "../components/PageWrapper";
 import Dropdown from "../components/Dropdown";
 import { fetchArtists } from "../services/artistApi";
 
@@ -33,9 +32,8 @@ const ManualSelection = () => {
   };
 
   return (
-    <PageWrapper>
-      <div className="flex flex-col items-center justify-center min-h-screen text-white px-4 py-8">
-        <div className="relative z-10 w-full max-w-2xl glass-card p-8 text-center backdrop-blur-2xl border border-white/10">
+    <div className="flex flex-col items-center justify-center min-h-screen text-white px-4 py-8">
+      <div className="relative z-10 w-full max-w-2xl glass-card p-8 text-center backdrop-blur-2xl border border-white/10">
           <h2 className="text-3xl md:text-4xl font-extrabold mb-6 gradient-text">
             🎼 Manual Selection
           </h2>
@@ -138,9 +136,8 @@ const ManualSelection = () => {
               ⬅ Back to Home
             </Link>
           </div>
-        </div>
       </div>
-    </PageWrapper>
+    </div>
   );
 };
 

@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/logo.png";
-import PageWrapper from "../components/PageWrapper";
 
 const Home = () => {
   const { logout } = useContext(AuthContext);
@@ -16,7 +15,7 @@ const Home = () => {
   };
 
   return (
-    <PageWrapper>
+    <>
       {/* === 🔝 Navbar === */}
       <header className="fixed top-0 left-0 w-full flex justify-between items-center px-10 py-6 bg-transparent z-30">
         <Link
@@ -83,7 +82,7 @@ const Home = () => {
           </div>
         </div>
       </main>
-    </PageWrapper>
+    </>
   );
 };
 

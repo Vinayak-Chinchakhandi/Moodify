@@ -1,8 +1,7 @@
+// src/pages/Playlists.jsx
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import PageWrapper from "../components/PageWrapper";
 import PlaylistCard from "../components/PlaylistCard";
-import AudioPlayer from "../components/AudioPlayer";
 import { auth, db } from "../firebase/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import { removeFromPlaylist, removePlaylist } from "../services/firestoreService";
@@ -27,14 +26,54 @@ const Playlists = () => {
     return () => unsubscribe(); // Cleanup listener on unmount
   }, []);
 
+  // Play a list at index idx
+  const playFromList = (list, idx) => {
+    const song = list && list[idx];
+    if (!song || !song.videoId) return;
+    try {
+      window.dispatchEvent(new CustomEvent("moodify-play", { detail: { song, playlist: list, index: idx } }));
+    } catch (err) {
+      console.error("Failed to play from playlist:", err);
+    }
+  };
+
   // If a playlist is selected, show its songs
   if (selectedPlaylist) {
     const songs = selectedPlaylist.songs || [];
     const playlistName = selectedPlaylist.name;
     return (
-      <PageWrapper>
-        <div className="flex flex-col items-center justify-center min-h-screen text-center px-6 pt-24 text-white">
+      <>
+        <div className="flex flex-col items-center justify-center min-h-screen text-center px-6 pt-24 pb-32 text-white">
           <div className="relative z-10 w-full max-w-5xl glass-card backdrop-blur-3xl border border-white/10 p-10 rounded-3xl shadow-[0_0_25px_rgba(255,255,255,0.05)]">
+            {/* Title + Back Button - Top Left */}
+            <div className="absolute top-6 left-6">
+              <button
+                onClick={() => setSelectedPlaylist(null)}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white transition-all shadow-lg hover:scale-110"
+                title="Back to Playlists"
+              >
+                ⬅
+              </button>
+            </div>
+
+            {/* Delete Button - Top Right */}
+            <div className="absolute top-6 right-6">
+              <button
+                onClick={async () => {
+                  if (!auth.currentUser) return;
+                  try {
+                    await removePlaylist(auth.currentUser.uid, playlistName);
+                    setSelectedPlaylist(null);
+                  } catch (err) {
+                    console.error("Failed to delete playlist:", err);
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-colors text-sm"
+              >
+                Delete
+              </button>
+            </div>
+
             {/* Title */}
             <h2 className="text-4xl font-extrabold mb-4 gradient-text">
               {selectedPlaylist.name} 📋
@@ -44,39 +83,14 @@ const Playlists = () => {
             </p>
 
             {/* Songs Grid */}
-            <div className="flex items-center justify-between mb-6">
-              <div />
-              <div className="flex gap-3">
-                <button
-                  onClick={async () => {
-                    if (!auth.currentUser) return;
-                    try {
-                      await removePlaylist(auth.currentUser.uid, playlistName);
-                      setSelectedPlaylist(null);
-                    } catch (err) {
-                      console.error("Failed to delete playlist:", err);
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-full shadow-md hover:opacity-90"
-                >
-                  Delete Playlist
-                </button>
-                <button
-                  onClick={() => setSelectedPlaylist(null)}
-                  className="px-4 py-2 bg-gray-800 text-white rounded-full shadow-md"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {songs.length > 0 ? (
                 songs.map((song, index) => (
                   <PlaylistCard
-                    key={index}
+                    key={`${song.videoId}-${index}`}
                     song={song}
                     showDelete={true}
+                    onPlay={() => playFromList(songs, index)}
                     onDelete={async () => {
                       if (!auth.currentUser) return;
                       try {
@@ -95,39 +109,28 @@ const Playlists = () => {
               )}
             </div>
 
-            {/* 🎧 Audio Player */}
-            {songs.length > 0 && (
-              <div className="flex justify-center mb-10">
-                <AudioPlayer playlist={songs} />
-              </div>
-            )}
-
-            {/* Back to Playlists List Button */}
-            <button
-              onClick={() => setSelectedPlaylist(null)}
-              className="inline-block px-8 py-3 bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 text-white font-semibold rounded-full shadow-md hover:scale-105 transition-transform mr-3"
-            >
-              ⬅ Back to Playlists
-            </button>
-
-            {/* Back to Home Button */}
-            <Link
-              to="/home"
-              className="inline-block px-8 py-3 bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 font-semibold rounded-full shadow-md hover:scale-105 transition-transform"
-            >
-              🏠 Back to Home
-            </Link>
           </div>
         </div>
-      </PageWrapper>
+      </>
     );
   }
 
   // Default view: show list of playlists
   return (
-    <PageWrapper>
+    <>
       <div className="flex flex-col items-center justify-center min-h-screen text-center px-6 pt-24 text-white">
         <div className="relative z-10 w-full max-w-6xl glass-card p-10 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_0_25px_rgba(255,255,255,0.05)]">
+          {/* Top-left back button to Home */}
+          <div className="absolute top-6 left-6">
+            <Link
+              to="/home"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white transition-all shadow-lg hover:scale-110"
+              title="Back to Home"
+            >
+              ⬅
+            </Link>
+          </div>
+
           {/* Title Section */}
           <h2 className="text-4xl font-extrabold mb-4 gradient-text">
             Your Playlists 🎶
@@ -142,12 +145,14 @@ const Playlists = () => {
             {playlists.length > 0 ? (
               playlists.map((playlist, index) => (
                 <div
-                  key={index}
-                  onClick={() => setSelectedPlaylist(playlist)}
+                  key={`${playlist.name}-${index}`}
                   className="group relative bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_35px_rgba(255,0,255,0.3)] cursor-pointer"
                 >
                   {/* Playlist Cover - show first song's thumbnail or placeholder */}
-                  <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-cyan-500 to-pink-500">
+                  <div
+                    className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-cyan-500 to-pink-500"
+                    onClick={() => setSelectedPlaylist(playlist)}
+                  >
                     {playlist.songs && playlist.songs.length > 0 && playlist.songs[0]?.thumbnail ? (
                       <img
                         src={playlist.songs[0].thumbnail}
@@ -166,13 +171,31 @@ const Playlists = () => {
                   </div>
 
                   {/* Playlist Info */}
-                  <div className="p-4">
+                  <div className="p-4 flex flex-col items-center gap-2">
                     <h3 className="text-lg font-semibold gradient-text text-center">
                       {playlist.name}
                     </h3>
                     <p className="text-gray-400 text-sm text-center mt-1">
                       {playlist.songs ? `${playlist.songs.length} songs` : "No songs"}
                     </p>
+
+                    {/* Quick play first song button */}
+                    {playlist.songs && playlist.songs.length > 0 && (
+                      <div className="w-full mt-3 flex gap-2">
+                        <button
+                          onClick={() => playFromList(playlist.songs, 0)}
+                          className="flex-1 px-3 py-2 rounded bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 text-sm font-semibold transition-all"
+                        >
+                          Play First
+                        </button>
+                        <button
+                          onClick={() => setSelectedPlaylist(playlist)}
+                          className="flex-1 px-3 py-2 rounded bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-all"
+                        >
+                          Open
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -183,16 +206,9 @@ const Playlists = () => {
             )}
           </div>
 
-          {/* Back to Home Button */}
-          <Link
-            to="/home"
-            className="inline-block px-8 py-3 bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 text-white font-semibold rounded-full shadow-md hover:scale-105 transition-transform"
-          >
-            ⬅ Back to Home
-          </Link>
         </div>
       </div>
-    </PageWrapper>
+    </>
   );
 };
 

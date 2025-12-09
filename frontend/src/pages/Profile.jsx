@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import PageWrapper from "../components/PageWrapper";
 import Dropdown from "../components/Dropdown";
 import { auth, db, storage } from "../firebase/firebase";
 import {
@@ -217,7 +216,7 @@ const Profile = () => {
   };
 
   return (
-    <PageWrapper>
+    <>
       <div className="flex flex-col items-center justify-center min-h-screen text-white">
 
         <div className="glass-card w-full max-w-3xl text-center p-10">
@@ -398,7 +397,7 @@ const Profile = () => {
           )}
         </div>
       </div>
-    </PageWrapper>
+    </>
   );
 };
 

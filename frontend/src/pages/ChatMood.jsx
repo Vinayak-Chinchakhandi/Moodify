@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import PageWrapper from "../components/PageWrapper";
 
 const ChatMood = () => {
   const navigate = useNavigate();
@@ -107,7 +106,7 @@ const ChatMood = () => {
   };
 
   return (
-    <PageWrapper>
+    <>
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8">
         <div className="w-full max-w-2xl glass-card p-8 flex flex-col justify-between min-h-[420px] backdrop-blur-2xl border border-white/10 rounded-2xl">
           <h2 className="text-3xl font-extrabold mb-4 gradient-text text-center">Mood Check — Quick Quiz 📝</h2>
@@ -167,7 +166,7 @@ const ChatMood = () => {
 
         </div>
       </div>
-    </PageWrapper>
+    </>
   );
 };
 

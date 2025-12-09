@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -13,7 +13,16 @@ import ManualSelection from "./pages/ManualSelection";
 import Intro from "./pages/Intro";
 import Stream from "./pages/Stream";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PageWrapper from "./components/PageWrapper";
 import "./App.css";
+
+const ProtectedLayout = () => (
+  <ProtectedRoute>
+    <PageWrapper>
+      <Outlet />
+    </PageWrapper>
+  </ProtectedRoute>
+);
 
 function App() {
   return (
@@ -27,17 +36,19 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* 🏠 Protected Main Pages */}
-          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="/mood-detection" element={<ProtectedRoute><MoodDetection /></ProtectedRoute>} />
-          <Route path="/chat-mood" element={<ProtectedRoute><ChatMood /></ProtectedRoute>} />
-          <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
-          <Route path="/stream" element={<ProtectedRoute><Stream /></ProtectedRoute>} />
-          <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
-          <Route path="/playlists" element={<ProtectedRoute><Playlists /></ProtectedRoute>} />
-          <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/manual-selection" element={<ProtectedRoute><ManualSelection /></ProtectedRoute>} />
+          {/* 🏠 Protected Main Pages (single PageWrapper keeps global player mounted) */}
+          <Route element={<ProtectedLayout />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/mood-detection" element={<MoodDetection />} />
+            <Route path="/chat-mood" element={<ChatMood />} />
+            <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/stream" element={<Stream />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/playlists" element={<Playlists />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/manual-selection" element={<ManualSelection />} />
+          </Route>
 
           {/* 🚫 Fallback Route */}
           <Route path="*" element={<Navigate to="/" />} />
