@@ -58,7 +58,7 @@ MOODIFY/
 │   │   │
 │   │   ├── components/
 │   │   │   ├── Dropdown.jsx
-│   │   │   ├── PageaWrapper.jsx
+│   │   │   ├── PageWrapper.jsx
 │   │   │   ├── SongCard.jsx
 │   │   │   ├── ParticleBackground.jsx
 │   │   │   ├── backgroundVideoPlayer.jsx
