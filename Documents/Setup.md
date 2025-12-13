@@ -1,11 +1,5 @@
-Install dependencies of both folder at once
-npm run install-all
-
-Now you can start both servers at once:
-npm run dev
-
 ```bash
-COMPLETE STRUCTURE TILL NOW
+COMPLETE STRUCTURE 
 
 
 MOODIFY/
@@ -126,3 +120,29 @@ MOODIFY/
 └── README.md
 
 ```
+
+# root .env
+NODE_ENV=development
+
+# rontend/ .env
+REACT_APP_BACKEND_URL=http://localhost:5000
+REACT_APP_ENV=development
+REACT_APP_FIREBASE_API_KEY='Your Firebase API Key'
+REACT_APP_FIREBASE_AUTH_DOMAIN='Your Firebase Auth Domain'
+REACT_APP_FIREBASE_PROJECT_ID='Your Firebase Project ID'
+REACT_APP_FIREBASE_STORAGE_BUCKET='Your Firebase Storage Bucket'
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID='Your Firebase Sender Message ID'
+REACT_APP_FIREBASE_APP_ID='Your Firebase App ID'
+
+# backend/ .env
+PORT=5000
+HF_API_KEY='Your Hugging Face API'
+YT_API_KEY='Your YouTube API'
+
+# Install dependencies of both folder at once
+npm run install-all
+
+# Now you can start both servers at once:
+npm run dev
+frontend at http://localhost:3000
+backend at http://localhost:5000
