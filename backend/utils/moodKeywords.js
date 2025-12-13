@@ -1,6 +1,3 @@
-/**
- * Mood to search keywords mapping
- */
 export function fetchMoodKeywords(mood) {
   const moodKeywords = {
     Happy: ["happy songs", "feel good music", "uplifting pop", "cheerful tracks", "joy music"],
