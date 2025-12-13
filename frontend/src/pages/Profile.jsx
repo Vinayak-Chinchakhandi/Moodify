@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import PageWrapper from "../components/PageWrapper";
 import Dropdown from "../components/Dropdown";
 import { auth, db, storage } from "../firebase/firebase";
 import {
@@ -20,6 +19,7 @@ import { AiOutlineCamera } from "react-icons/ai";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const formRef = useRef(null);
 
   const [user, setUser] = useState({
     name: "",
@@ -65,7 +65,7 @@ const Profile = () => {
 
   // SAVE PROFILE
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
     if (!auth.currentUser) return;
 
     const uid = auth.currentUser.uid;
@@ -186,7 +186,7 @@ const Profile = () => {
     } catch (err) {
       alert(err.message);
     }
-};
+  };
 
   // DELETE ACCOUNT
   const handleDeleteAccount = async () => {
@@ -217,10 +217,39 @@ const Profile = () => {
   };
 
   return (
-    <PageWrapper>
+    <>
       <div className="flex flex-col items-center justify-center min-h-screen text-white">
+        <div className="glass-card w-full max-w-3xl text-center p-10 relative">
+          {/* Top-left Save/Cancel controls (visible only while editing) */}
+          {editing && (
+            <div className="absolute top-4 left-4 flex items-center gap-2 z-50">
+              <button
+                onClick={() => {
+                  // trigger form submit
+                  if (formRef.current && typeof formRef.current.requestSubmit === "function") {
+                    formRef.current.requestSubmit();
+                  } else {
+                    // fallback: call handleSave directly (keeps behaviour same)
+                    handleSave();
+                  }
+                }}
+                title="Save"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg hover:scale-105 transition"
+              >
+                ✅
+              </button>
 
-        <div className="glass-card w-full max-w-3xl text-center p-10">
+              <button
+                onClick={() => {
+                  setEditing(false);
+                }}
+                title="Cancel"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
+              >
+                ❌
+              </button>
+            </div>
+          )}
 
           <h2 className="text-4xl font-extrabold mb-6 gradient-text">Your Profile 👤</h2>
 
@@ -252,7 +281,6 @@ const Profile = () => {
 
               {/* 2x2 GRID BUTTONS */}
               <div className="grid grid-cols-2 gap-4 place-items-center mt-6">
-
                 <button
                   onClick={() => setEditing(true)}
                   className="px-6 py-3 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition"
@@ -285,8 +313,7 @@ const Profile = () => {
           ) : (
             <>
               {/* EDIT MODE */}
-              <form onSubmit={handleSave} className="space-y-6 mt-4">
-
+              <form ref={formRef} onSubmit={handleSave} className="space-y-6 mt-4">
                 {/* NAME */}
                 <div className="rounded-lg p-[2px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400">
                   <input
@@ -376,29 +403,14 @@ const Profile = () => {
                   </div>
                 )}
 
-                {/* BUTTONS */}
-                <div className="flex justify-center gap-6 mt-6">
-                  <button
-                    type="submit"
-                    className="px-10 py-3 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition"
-                  >
-                    💾 Save
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEditing(false)}
-                    className="px-10 py-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
-                  >
-                    ✖ Cancel
-                  </button>
-                </div>
+                {/* REPLACED ORIGINAL BUTTONS WITH A SPACER so layout does not shift */}
+                <div className="h-16" aria-hidden />
               </form>
             </>
           )}
         </div>
       </div>
-    </PageWrapper>
+    </>
   );
 };
 

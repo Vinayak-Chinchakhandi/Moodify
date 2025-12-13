@@ -1,9 +1,9 @@
 import React, { useRef, useEffect } from "react";
 
-const WebcamCapture = ({ onFrame, stopAfterDetection }) => {
+const WebcamCapture = ({ onFrame }) => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const canvasRef = useRef(null); // reuse canvas
+  const canvasRef = useRef(null);
   const intervalRef = useRef(null);
 
   const isMobile = /Mobi|Android/i.test(navigator.userAgent) && window.innerWidth < 1024;
@@ -20,10 +20,8 @@ const WebcamCapture = ({ onFrame, stopAfterDetection }) => {
         streamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
 
-        // create canvas once
         canvasRef.current = document.createElement("canvas");
 
-        // start interval to send frames
         intervalRef.current = setInterval(() => {
           if (!videoRef.current) return;
 
@@ -33,12 +31,11 @@ const WebcamCapture = ({ onFrame, stopAfterDetection }) => {
           canvas.height = video.videoHeight;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const continueCapture = onFrame?.(canvas); // if onFrame returns false, stop interval
 
-          if (stopAfterDetection && continueCapture === false) {
-            clearInterval(intervalRef.current);
-          }
-        }, 500);
+          canvas.toBlob((blob) => {
+            onFrame(blob);
+          }, "image/jpeg");
+        }, 1000); // capture every 1 sec
       } catch (err) {
         console.error("Camera access denied:", err);
         alert("Unable to access webcam. Please allow permissions.");
@@ -48,10 +45,9 @@ const WebcamCapture = ({ onFrame, stopAfterDetection }) => {
     startCamera();
 
     return () => {
-      // stop camera and interval
-      if (streamRef.current) {
+      if (streamRef.current)
         streamRef.current.getTracks().forEach((track) => track.stop());
-      }
+
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);

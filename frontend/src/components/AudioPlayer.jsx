@@ -1,165 +1,150 @@
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipBack, SkipForward, Repeat } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { Play, Pause, SkipBack, SkipForward, Heart, ExternalLink } from "lucide-react";
+import { addToFavorites, removeFromFavorites, addToHistory } from "../services/firestoreService";
+import { auth } from "../firebase/firebase";
 
-const AudioPlayer = ({ playlist = [] }) => {
+const isValidVideoId = (id) => typeof id === "string" && id.trim().length >= 3;
+
+const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [loop, setLoop] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
-  const audioRef = useRef(null);
-
-  const currentSong =
-    playlist.length > 0 ? playlist[currentIndex] : { title: "No song", artist: "", src: "" };
-
-  // ✅ useEffect always called (no conditional)
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    try {
+      const savedSong = JSON.parse(sessionStorage.getItem("moodifyCurrentSong"));
+      const savedIndex = Number(sessionStorage.getItem("moodifyCurrentIndex")) || 0;
+      const savedPlaying = sessionStorage.getItem("moodifyIsPlaying") === "true";
+      if (savedSong && playlist.length > 0) {
+        const index = playlist.findIndex((s) => s.videoId === savedSong.videoId);
+        if (index !== -1) {
+          setCurrentIndex(index);
+          setIsPlaying(savedPlaying);
+        } else {
+          setCurrentIndex(Math.min(savedIndex, playlist.length - 1));
+          setIsPlaying(savedPlaying);
+        }
+      } else if (playlist.length > 0) {
+        // default to first on new playlist
+        setCurrentIndex(0);
+      }
+    } catch (err) { console.error("Failed to restore session:", err); }
+  }, [playlist]);
 
-    const updateProgress = () => {
-      setCurrentTime(audio.currentTime);
-      setProgress((audio.currentTime / audio.duration) * 100 || 0);
+  const currentSong = playlist.length > 0 ? playlist[currentIndex] : { title: "No song", artist: "", videoId: null, thumbnail: null };
+
+  useEffect(() => {
+    setIsLiked(!!currentSong?.isLiked);
+  }, [currentIndex, currentSong]);
+
+  // update UI when video actually loads (emitted by BackgroundVideoPlayer)
+  useEffect(() => {
+    const handleVideoLoaded = (e) => {
+      const vid = e.detail?.videoId;
+      if (!vid || playlist.length === 0) return;
+      const idx = playlist.findIndex((s) => s.videoId === vid);
+      if (idx !== -1) setCurrentIndex(idx);
     };
+    window.addEventListener("moodify-video-loaded", handleVideoLoaded);
+    return () => window.removeEventListener("moodify-video-loaded", handleVideoLoaded);
+  }, [playlist]);
 
-    const handleLoadedMetadata = () => setDuration(audio.duration);
+  // update isPlaying when background player broadcasts state
+  useEffect(() => {
+    const handlePlayStateChange = (e) => setIsPlaying(e.detail?.isPlaying || false);
+    window.addEventListener("moodify-video-state", handlePlayStateChange);
+    return () => window.removeEventListener("moodify-video-state", handlePlayStateChange);
+  }, []);
 
-    const handleEnded = () => {
-      if (loop) audio.play();
-      else handleNext();
-    };
+  const handleNext = useCallback(() => {
+    if (playlist.length === 0) return;
+    const nextIndex = (currentIndex + 1) % playlist.length;
+    const nextSong = playlist[nextIndex];
+    // dispatch global play with playlist and index
+    window.dispatchEvent(new CustomEvent("moodify-play", { detail: { song: nextSong, playlist, index: nextIndex } }));
+    setCurrentIndex(nextIndex);
+    setIsPlaying(true);
+    try { sessionStorage.setItem("moodifyCurrentIndex", String(nextIndex)); sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(nextSong)); sessionStorage.setItem("moodifyIsPlaying","true"); } catch {}
+  }, [playlist, currentIndex]);
 
-    audio.addEventListener("timeupdate", updateProgress);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", updateProgress);
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [currentIndex, loop]);
+  const handlePrev = useCallback(() => {
+    if (playlist.length === 0) return;
+    const prevIndex = currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
+    const prevSong = playlist[prevIndex];
+    window.dispatchEvent(new CustomEvent("moodify-play", { detail: { song: prevSong, playlist, index: prevIndex } }));
+    setCurrentIndex(prevIndex);
+    setIsPlaying(true);
+    try { sessionStorage.setItem("moodifyCurrentIndex", String(prevIndex)); sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(prevSong)); sessionStorage.setItem("moodifyIsPlaying","true"); } catch {}
+  }, [playlist, currentIndex]);
 
   const handlePlayPause = () => {
-    const audio = audioRef.current;
-    if (!audio || !currentSong.src) return;
-    if (isPlaying) audio.pause();
-    else audio.play();
-    setIsPlaying(!isPlaying);
+    if (!currentSong || !isValidVideoId(currentSong.videoId)) return;
+    const newState = !isPlaying;
+    setIsPlaying(newState);
+    try { sessionStorage.setItem("moodifyIsPlaying", newState ? "true" : "false"); } catch {}
+    window.dispatchEvent(new CustomEvent("moodify-control-play-pause", { detail: { isPlaying: newState } }));
   };
 
-  const handleNext = () => {
-    if (playlist.length === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % playlist.length);
-    setProgress(0);
+  // STREAM behavior:
+  // - persist current song + playlist + index
+  // - inform background player to pause (moodify-enter-visual-stream)
+  // - navigate to /stream with state so iframe has immediate data
+  const handleStream = () => {
+    if (!currentSong || !isValidVideoId(currentSong.videoId)) return;
+    try {
+      const payload = { song: currentSong, playlist: playlist.length ? playlist : [currentSong], index: currentIndex };
+      sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(payload.song));
+      sessionStorage.setItem("moodifyCurrentPlaylist", JSON.stringify(payload.playlist));
+      sessionStorage.setItem("moodifyCurrentIndex", String(payload.index || 0));
+      // notify background player to pause and persist current time
+      window.dispatchEvent(new CustomEvent("moodify-enter-visual-stream", { detail: { song: payload.song, playlist: payload.playlist, index: payload.index } }));
+    } catch (err) { console.error("handleStream session error:", err); }
+    // give a slight delay so background player can persist time before we navigate
+    setTimeout(() => navigate("/stream", { state: { song: currentSong, playlist, index: currentIndex } }), 120);
   };
 
-  const handlePrev = () => {
-    if (playlist.length === 0) return;
-    setCurrentIndex((prev) => (prev === 0 ? playlist.length - 1 : prev - 1));
-    setProgress(0);
+  const handleLike = async () => {
+    if (!currentSong || !isValidVideoId(currentSong.videoId)) return;
+    if (!auth.currentUser) return;
+    try {
+      if (!isLiked) { await addToFavorites(auth.currentUser.uid, currentSong); setIsLiked(true); }
+      else { await removeFromFavorites(auth.currentUser.uid, currentSong.videoId); setIsLiked(false); }
+    } catch (err) { console.error("Like action failed:", err); }
   };
 
-  const handleSeek = (e) => {
-    const audio = audioRef.current;
-    if (!audio || !audio.duration) return;
-    const newTime = (e.target.value / 100) * audio.duration;
-    audio.currentTime = newTime;
-    setProgress(e.target.value);
-  };
+  if (!isGlobal && playlist.length === 0) return null;
 
-  const toggleLoop = () => setLoop((prev) => !prev);
-
-  const formatTime = (time) => {
-    if (isNaN(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
-  };
-
-  // ✅ Now we return early *after* hooks — safe for ESLint
-  if (playlist.length === 0) {
+  if (isGlobal) {
     return (
-      <div className="flex flex-col items-center justify-center w-full max-w-md glass-card p-6 rounded-2xl border border-white/10 text-white backdrop-blur-2xl text-center">
-        <p className="text-gray-400 mb-2 text-lg">🎧 No songs to play</p>
-        <p className="text-sm text-gray-500">
-          Add songs to your playlist or favorites to start listening.
-        </p>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl z-50">
+        <div className="bg-gradient-to-r from-cyan-900/80 via-purple-900/80 to-orange-900/80 backdrop-blur-lg border border-white/20 rounded-xl p-4 shadow-2xl shadow-purple-900/50">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-purple-500 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
+                {currentSong?.thumbnail ? <img src={currentSong.thumbnail} alt={currentSong.title || "cover"} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/5 flex items-center justify-center text-sm text-gray-300">No cover</div>}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="text-white font-bold truncate text-sm md:text-base">{currentSong?.title || "No song"}</h4>
+                <p className="text-cyan-200 text-xs md:text-sm truncate">{currentSong?.artist || ""}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button onClick={handlePrev} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-cyan-300 hover:text-white" title="Previous"><SkipBack size={18} /></button>
+              <button onClick={handlePlayPause} className="p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white transition-all shadow-lg" title={isPlaying ? "Pause" : "Play"}>{isPlaying ? <Pause size={18} /> : <Play size={18} />}</button>
+              <button onClick={handleNext} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-cyan-300 hover:text-white" title="Next"><SkipForward size={18} /></button>
+              <button onClick={handleStream} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-orange-300 hover:text-orange-100 flex items-center gap-1" title="Play on Stream"><ExternalLink size={18} /></button>
+              <button onClick={handleLike} className={`p-2 rounded-lg transition-all ${isLiked ? "bg-pink-600/80 text-white shadow-lg" : "hover:bg-white/20 text-gray-300 hover:text-pink-400"}`} title={isLiked ? "Unlike" : "Like"}><Heart size={18} fill={isLiked ? "currentColor" : "none"} /></button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="relative flex flex-col items-center justify-center w-full max-w-md glass-card p-6 rounded-2xl border border-white/10 text-white backdrop-blur-2xl shadow-[0_0_25px_rgba(255,0,255,0.2)] hover:shadow-[0_0_40px_rgba(0,255,255,0.3)] transition-all">
-      {/* 🎵 Song Info */}
-      <h2 className="text-2xl font-bold mb-1 gradient-text text-center">
-        {currentSong.title}
-      </h2>
-      <p className="text-gray-400 text-sm mb-4">{currentSong.artist}</p>
-
-      {/* 🎶 Progress Bar */}
-      <input
-        type="range"
-        min="0"
-        max="100"
-        value={progress}
-        onChange={handleSeek}
-        className="w-full accent-cyan-400 cursor-pointer"
-      />
-
-      {/* ⏱ Time Display */}
-      <div className="flex justify-between text-xs text-gray-400 w-full mt-1">
-        <span>{formatTime(currentTime)}</span>
-        <span>{formatTime(duration)}</span>
-      </div>
-
-      {/* 🔘 Controls */}
-      <div className="flex items-center justify-center gap-6 mt-4">
-        <button onClick={handlePrev} className="hover:scale-110 transition-transform text-cyan-400">
-          <SkipBack size={26} />
-        </button>
-        <button
-          onClick={handlePlayPause}
-          className="bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 p-4 rounded-full shadow-[0_0_25px_rgba(255,0,255,0.3)] hover:scale-110 transition-transform"
-        >
-          {isPlaying ? <Pause size={30} /> : <Play size={30} />}
-        </button>
-        <button onClick={handleNext} className="hover:scale-110 transition-transform text-pink-400">
-          <SkipForward size={26} />
-        </button>
-      </div>
-
-      {/* 🔁 Loop Toggle */}
-      <button
-        onClick={toggleLoop}
-        className={`mt-4 text-sm flex items-center gap-2 ${
-          loop ? "text-pink-400" : "text-gray-400"
-        } hover:text-cyan-400 transition-colors`}
-      >
-        <Repeat size={18} />
-        {loop ? "Loop On" : "Loop Off"}
-      </button>
-
-      {/* 🎧 Audio Element */}
-      <audio ref={audioRef} src={currentSong.src} preload="metadata" />
-
-      <style>{`
-        .glass-card {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 1rem;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          box-shadow: 0 0 25px rgba(255, 0, 255, 0.15);
-        }
-        .gradient-text {
-          background: linear-gradient(to right, #00ffff, #ff00ff, #ff6600);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-      `}</style>
-    </div>
-  );
+  return null;
 };
 
 export default AudioPlayer;
