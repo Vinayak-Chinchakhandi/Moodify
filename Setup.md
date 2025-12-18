@@ -31,12 +31,7 @@ MOODIFY/
 │   │   └── async.middleware.js
 │   │
 │   │── utils/
-│   │   ├── logger.js(EMPTY)
-│   │   ├── moodKeywords.js
-│   │   └── response.js(EMPTY)
-│   │
-│   │── config/(EMPTY)
-│   │   └── axiosInstance.js(EMPTY)
+│   │   └── moodKeywords.js
 │   │
 │   ├──package.json
 │   ├──test-env.js
@@ -69,7 +64,6 @@ MOODIFY/
 │   │   │   └── PlaylistCard.jsx
 │   │   │
 │   │   ├── context/
-│   │   │   ├── AppContext.js(EMPTY)
 │   │   │   └── AuthContext.js
 │   │   │
 │   │   ├── firebase/
@@ -98,8 +92,7 @@ MOODIFY/
 │   │   │   └── moodServer.js
 │   │   │
 │   │   ├── utils/
-│   │   │   ├── hfEmotionDetector.js
-│   │   │   └── moodMapping.js(EMPTY)
+│   │   │   └── hfEmotionDetector.js
 │   │   │
 │   │   ├── App.css
 │   │   ├── App.js
