@@ -137,3 +137,95 @@ MOODIFY/
 7. Clicking Stream opens full video playback
 
 8. Returning from stream resumes background audio playback
+
+---
+
+## 📷 Screenshots
+
+Below are screenshots for each page (images are in the `images/` folder):
+
+1. **Intro page**
+
+<div style="margin-bottom:18px">
+  <img src="images/Intro_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+2. **Home**
+
+<div style="margin-bottom:18px">
+  <img src="images/Home_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+3. **Manual Selection**
+
+<div style="margin-bottom:18px">
+  <img src="images/ManualSelection_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+4. **Mood Detection**
+
+<div style="margin-bottom:18px">
+  <img src="images/MoodDetection_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+5. **Chat Mood Detection**
+
+<div style="margin-bottom:18px">
+  <img src="images/ChatMoodDetection_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+6. **Recommendations**
+
+<div style="margin-bottom:18px">
+  <img src="images/Recommendation_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+7. **Stream pages**
+
+### Stream page layout
+
+<div style="margin-bottom:12px">
+  <img src="images/Stream_page_1.png" alt="Stream page layout" style="width:100%;max-width:900px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+  <p style="color:#cbd5e1;margin-top:6px;font-size:14px">Layout showing container, video title and controls.</p>
+</div>
+
+### During video playing
+
+<div style="margin-bottom:18px">
+  <img src="images/Stream_page_2.png" alt="Stream playing" style="width:100%;max-width:900px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+  <p style="color:#cbd5e1;margin-top:6px;font-size:14px">Stream page while video is playing.</p>
+</div>
+
+8. **Favorites**
+
+<div style="margin-bottom:18px">
+  <img src="images/Favorites_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+9. **Playlists**
+
+<div style="margin-bottom:18px">
+  <img src="images/Playlists_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+10. **History**
+
+<div style="margin-bottom:18px">
+  <img src="images/History_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+</div>
+
+11. **Profile pages**
+
+### Profile page
+
+<div style="margin-bottom:12px">
+  <img src="images/Profile_page.png" alt="Profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+  <p style="color:#cbd5e1;margin-top:6px;font-size:14px">User profile with picture and preferences.</p>
+</div>
+
+### Edit profile page
+
+<div style="margin-bottom:18px">
+  <img src="images/EditProfile_page.png" alt="Edit profile page" style="width:100%;max-width:700px;border:6px solid rgba(255,255,255,0.06);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.6);" />
+  <p style="color:#cbd5e1;margin-top:6px;font-size:14px">Edit profile screen for updating avatar and settings.</p>
+</div>

@@ -23,6 +23,8 @@ const MoodDetection = () => {
 
     setMood(emotion);
     setDetected(true);
+    // Stop camera immediately when detection is done
+    try { window.dispatchEvent(new Event('moodify-stop-camera')); } catch (e) {}
     setIsDetecting(false);
   };
 
