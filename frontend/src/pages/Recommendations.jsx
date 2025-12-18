@@ -1,6 +1,6 @@
 // src/pages/Recommendations.jsx
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { auth, db } from "../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import {
@@ -26,7 +26,12 @@ const Recommendations = () => {
   const [playlistModal, setPlaylistModal] = useState({ show: false, song: null });
   const [newPlaylistName, setNewPlaylistName] = useState("");
 
+  const initStarted = useRef(false);
+
   useEffect(() => {
+    if (initStarted.current) return; // prevent double-run in StrictMode
+    initStarted.current = true;
+
     const fetchInitialData = async () => {
       if (!auth.currentUser) {
         setLoading(false);
