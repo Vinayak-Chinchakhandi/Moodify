@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Play, Pause, SkipBack, SkipForward, Heart, ExternalLink } from "lucide-react";
-import { addToFavorites, removeFromFavorites, addToHistory } from "../services/firestoreService";
+import { Play, Pause, SkipBack, SkipForward, Heart, ExternalLink, List } from "lucide-react";
+import { addToFavorites, removeFromFavorites, addToHistory, addToPlaylist, createPlaylist, getUserPlaylists } from "../services/firestoreService";
 import { auth } from "../firebase/firebase";
 
 const isValidVideoId = (id) => typeof id === "string" && id.trim().length >= 3;
@@ -11,6 +11,9 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [playlists, setPlaylists] = useState([]);
+  const [playlistModal, setPlaylistModal] = useState({ show: false, song: null });
+  const [newPlaylistName, setNewPlaylistName] = useState("");
 
   useEffect(() => {
     try {
@@ -114,16 +117,60 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
     } catch (err) { console.error("Like action failed:", err); }
   };
 
+  const handleAddToPlaylist = (song) => {
+    setPlaylistModal({ show: true, song });
+    // load playlists
+    (async () => {
+      try {
+        if (!auth.currentUser) return;
+        const pls = await getUserPlaylists(auth.currentUser.uid);
+        setPlaylists(pls || []);
+      } catch (err) {
+        console.error("Failed to load playlists:", err);
+      }
+    })();
+  };
+
+  const handleCreatePlaylist = async () => {
+    if (!newPlaylistName.trim()) return;
+    if (!auth.currentUser) return;
+    try {
+      await createPlaylist(auth.currentUser.uid, newPlaylistName);
+      const updated = await getUserPlaylists(auth.currentUser.uid);
+      setPlaylists(updated || []);
+      setNewPlaylistName("");
+      alert(`Playlist "${newPlaylistName}" created!`);
+    } catch (err) {
+      alert("Error creating playlist: " + err.message);
+    }
+  };
+
+  const handleSelectPlaylist = async (playlistName) => {
+    if (!playlistModal.song) return;
+    if (!auth.currentUser) return;
+    try {
+      await addToPlaylist(auth.currentUser.uid, playlistName, playlistModal.song);
+      alert(`"${playlistModal.song.title}" added to "${playlistName}"`);
+      setPlaylistModal({ show: false, song: null });
+    } catch (err) {
+      alert("Error adding to playlist: " + err.message);
+    }
+  };
+
   if (!isGlobal && playlist.length === 0) return null;
 
-  if (isGlobal) {
-    return (
+  return (
+    <>
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl z-50">
         <div className="bg-gradient-to-r from-cyan-900/80 via-purple-900/80 to-orange-900/80 backdrop-blur-lg border border-white/20 rounded-xl p-4 shadow-2xl shadow-purple-900/50">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-purple-500 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
-                {currentSong?.thumbnail ? <img src={currentSong.thumbnail} alt={currentSong.title || "cover"} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/5 flex items-center justify-center text-sm text-gray-300">No cover</div>}
+                {currentSong?.thumbnail ? (
+                  <img src={currentSong.thumbnail} alt={currentSong.title || "cover"} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-white/5 flex items-center justify-center text-sm text-gray-300">No cover</div>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="text-white font-bold truncate text-sm md:text-base">{currentSong?.title || "No song"}</h4>
@@ -136,15 +183,58 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
               <button onClick={handlePlayPause} className="p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white transition-all shadow-lg" title={isPlaying ? "Pause" : "Play"}>{isPlaying ? <Pause size={18} /> : <Play size={18} />}</button>
               <button onClick={handleNext} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-cyan-300 hover:text-white" title="Next"><SkipForward size={18} /></button>
               <button onClick={handleStream} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-orange-300 hover:text-orange-100 flex items-center gap-1" title="Play on Stream"><ExternalLink size={18} /></button>
+              <button onClick={() => handleAddToPlaylist(currentSong)} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-gray-300 hover:text-white" title="Add to playlist"><List size={18} /></button>
               <button onClick={handleLike} className={`p-2 rounded-lg transition-all ${isLiked ? "bg-pink-600/80 text-white shadow-lg" : "hover:bg-white/20 text-gray-300 hover:text-pink-400"}`} title={isLiked ? "Unlike" : "Like"}><Heart size={18} fill={isLiked ? "currentColor" : "none"} /></button>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
 
-  return null;
+      {playlistModal.show && (
+        <PlaylistModal
+          playlistModal={playlistModal}
+          setPlaylistModal={setPlaylistModal}
+          playlists={playlists}
+          setPlaylists={setPlaylists}
+          newPlaylistName={newPlaylistName}
+          setNewPlaylistName={setNewPlaylistName}
+          handleCreatePlaylist={handleCreatePlaylist}
+          handleSelectPlaylist={handleSelectPlaylist}
+        />
+      )}
+    </>
+  );
 };
+
+function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylists, newPlaylistName, setNewPlaylistName, handleCreatePlaylist, handleSelectPlaylist }) {
+  if (!playlistModal.show || !playlistModal.song) return null;
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="glass-card p-6 rounded-2xl border border-white/10 max-w-md w-full">
+        <h3 className="text-xl font-bold mb-4 text-cyan-300">Add to Playlist</h3>
+        {playlists.length > 0 && (
+          <>
+            <p className="text-sm text-gray-400 mb-2">Select a playlist:</p>
+            <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
+              {playlists.map((pl) => (
+                <button key={pl.name} onClick={() => handleSelectPlaylist(pl.name)} className="w-full px-3 py-2 rounded bg-white/10 hover:bg-white/20 text-left text-sm transition-all">
+                  {pl.name}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="border-t border-white/10 pt-4">
+          <p className="text-sm text-gray-400 mb-2">Or create new:</p>
+          <input type="text" value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)} placeholder="Playlist name..." className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-gray-500 mb-2 text-sm" />
+          <button onClick={handleCreatePlaylist} className="w-full px-3 py-2 rounded bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 text-sm font-semibold transition-all mb-3">Create Playlist</button>
+        </div>
+
+        <button onClick={() => setPlaylistModal({ show: false, song: null })} className="w-full px-3 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-all">Cancel</button>
+      </div>
+    </div>
+  );
+}
 
 export default AudioPlayer;
