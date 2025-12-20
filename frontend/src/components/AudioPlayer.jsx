@@ -207,31 +207,58 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
 };
 
 function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylists, newPlaylistName, setNewPlaylistName, handleCreatePlaylist, handleSelectPlaylist }) {
-  if (!playlistModal.show || !playlistModal.song) return null;
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="glass-card p-6 rounded-2xl border border-white/10 max-w-md w-full">
-        <h3 className="text-xl font-bold mb-4 text-cyan-300">Add to Playlist</h3>
-        {playlists.length > 0 && (
-          <>
-            <p className="text-sm text-gray-400 mb-2">Select a playlist:</p>
-            <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
-              {playlists.map((pl) => (
-                <button key={pl.name} onClick={() => handleSelectPlaylist(pl.name)} className="w-full px-3 py-2 rounded bg-white/10 hover:bg-white/20 text-left text-sm transition-all">
-                  {pl.name}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+  const [selected, setSelected] = useState(null);
 
-        <div className="border-t border-white/10 pt-4">
-          <p className="text-sm text-gray-400 mb-2">Or create new:</p>
-          <input type="text" value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)} placeholder="Playlist name..." className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white placeholder-gray-500 mb-2 text-sm" />
-          <button onClick={handleCreatePlaylist} className="w-full px-3 py-2 rounded bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 text-sm font-semibold transition-all mb-3">Create Playlist</button>
+  if (!playlistModal.show || !playlistModal.song) return null;
+
+  const onConfirm = async () => {
+    if (!selected) return;
+    await handleSelectPlaylist(selected);
+  };
+
+  const createAndSave = async () => {
+    const name = newPlaylistName?.trim();
+    if (!name) return;
+    // create playlist then add
+    await handleCreatePlaylist();
+    await handleSelectPlaylist(name);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="glass-card p-6 rounded-2xl border border-white/10 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-extrabold text-transparent bg-clip-text gradient-text">Add to Playlist</h3>
+          <button onClick={() => setPlaylistModal({ show: false, song: null })} className="text-sm text-gray-300 hover:text-white">Close</button>
         </div>
 
-        <button onClick={() => setPlaylistModal({ show: false, song: null })} className="w-full px-3 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-all">Cancel</button>
+        {playlists.length > 0 ? (
+          <div className="grid gap-2 mb-4 max-h-48 overflow-y-auto">
+            {playlists.map((pl) => (
+              <button
+                key={pl.name}
+                onClick={() => setSelected(pl.name)}
+                className={`w-full text-left px-4 py-2 rounded-lg transition-all border ${selected === pl.name ? 'border-cyan-400 bg-cyan-600/20 text-white' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-400 hover:bg-white/10'}`}>
+                {pl.name}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400 mb-3">No playlists yet — create one below.</p>
+        )}
+
+        <div className="border-t border-white/10 pt-4 mb-4">
+          <label className="text-sm text-gray-300 mb-2 block">Create new playlist</label>
+          <div className="flex gap-2">
+            <input type="text" value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)} placeholder="Playlist name..." className="flex-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-white placeholder-gray-500 text-sm" />
+            <button onClick={createAndSave} className="px-4 py-2 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold">Create & Save</button>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <button onClick={onConfirm} className="flex-1 px-4 py-2 rounded bg-cyan-500/30 text-cyan-200 font-semibold hover:bg-cyan-500/50">Save</button>
+          <button onClick={() => setPlaylistModal({ show: false, song: null })} className="flex-1 px-4 py-2 rounded bg-white/10 text-gray-300 hover:bg-white/20">Cancel</button>
+        </div>
       </div>
     </div>
   );
