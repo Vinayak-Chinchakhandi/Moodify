@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Play, Pause, SkipBack, SkipForward, Heart, ExternalLink, List } from "lucide-react";
 import { addToFavorites, removeFromFavorites, addToHistory, addToPlaylist, createPlaylist, getUserPlaylists } from "../services/firestoreService";
@@ -14,6 +14,11 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
   const [playlists, setPlaylists] = useState([]);
   const [playlistModal, setPlaylistModal] = useState({ show: false, song: null });
   const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [showVolume, setShowVolume] = useState(false);
+  const [volume, setVolume] = useState(() => {
+    try { return Number(sessionStorage.getItem("moodifyVolume")) || 80; } catch { return 80; }
+  });
+  const volumeRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -60,6 +65,16 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
     window.addEventListener("moodify-video-state", handlePlayStateChange);
     return () => window.removeEventListener("moodify-video-state", handlePlayStateChange);
   }, []);
+
+  // close volume popup when clicking outside
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!showVolume) return;
+      if (volumeRef.current && !volumeRef.current.contains(e.target)) setShowVolume(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [showVolume]);
 
   const handleNext = useCallback(() => {
     if (playlist.length === 0) return;
@@ -115,6 +130,15 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
       if (!isLiked) { await addToFavorites(auth.currentUser.uid, currentSong); setIsLiked(true); }
       else { await removeFromFavorites(auth.currentUser.uid, currentSong.videoId); setIsLiked(false); }
     } catch (err) { console.error("Like action failed:", err); }
+  };
+
+  const toggleVolume = () => setShowVolume((s) => !s);
+
+  const handleVolumeChange = (val) => {
+    const num = Number(val);
+    setVolume(num);
+    try { sessionStorage.setItem("moodifyVolume", String(num)); } catch {}
+    window.dispatchEvent(new CustomEvent("moodify-volume", { detail: { volume: num / 100 } }));
   };
 
   const handleAddToPlaylist = (song) => {
@@ -183,6 +207,19 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
               <button onClick={handlePlayPause} className="p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white transition-all shadow-lg" title={isPlaying ? "Pause" : "Play"}>{isPlaying ? <Pause size={18} /> : <Play size={18} />}</button>
               <button onClick={handleNext} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-cyan-300 hover:text-white" title="Next"><SkipForward size={18} /></button>
               <button onClick={handleStream} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-orange-300 hover:text-orange-100 flex items-center gap-1" title="Play on Stream"><ExternalLink size={18} /></button>
+
+              <div className="relative">
+                <button onClick={toggleVolume} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-gray-300 hover:text-white" title="Volume"><CustomVolumeIcon size={22} /></button>
+                {showVolume && (
+                  <div ref={volumeRef} className="absolute bottom-14 right-0 w-44 p-3 bg-white/5 border border-white/10 rounded-lg shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <input type="range" min="0" max="100" value={volume} onChange={(e) => handleVolumeChange(e.target.value)} onInput={(e) => handleVolumeChange(e.target.value)} className="w-full volume-slider" style={{ ['--volume']: `${volume}%` }} />
+                      <div className="text-sm text-cyan-200 w-10 text-right">{volume}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <button onClick={() => handleAddToPlaylist(currentSong)} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-gray-300 hover:text-white" title="Add to playlist"><List size={18} /></button>
               <button onClick={handleLike} className={`p-2 rounded-lg transition-all ${isLiked ? "bg-pink-600/80 text-white shadow-lg" : "hover:bg-white/20 text-gray-300 hover:text-pink-400"}`} title={isLiked ? "Unlike" : "Like"}><Heart size={18} fill={isLiked ? "currentColor" : "none"} /></button>
             </div>
@@ -205,6 +242,18 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
     </>
   );
 };
+
+// Slider styles for multicolor theme (cyan -> pink -> orange)
+const sliderStyles = `
+.volume-slider { appearance: none; height: 6px; border-radius: 999px; outline: none; background-color: rgba(255,255,255,0.06); background-image: linear-gradient(90deg,#00ffff,#ff00ff,#ff6600); background-size: var(--volume, 80%) 100%; background-repeat: no-repeat; }
+.volume-slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; }
+.volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 999px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); margin-top: -5px; border: 2px solid rgba(255,255,255,0.85); }
+.volume-slider::-moz-range-track { height: 6px; border-radius: 999px; background: transparent; }
+.volume-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 999px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.85); }
+`;
+
+// inject styles once
+try { if (typeof document !== 'undefined' && !document.getElementById('moodify-volume-styles')) { const s = document.createElement('style'); s.id = 'moodify-volume-styles'; s.innerHTML = sliderStyles; document.head.appendChild(s); } } catch (e) {}
 
 function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylists, newPlaylistName, setNewPlaylistName, handleCreatePlaylist, handleSelectPlaylist }) {
   const [selected, setSelected] = useState(null);
@@ -265,3 +314,15 @@ function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylist
 }
 
 export default AudioPlayer;
+
+// Custom inline SVG volume icon used in the AudioPlayer
+function CustomVolumeIcon({ size = 20 }) {
+  const s = Math.max(14, size);
+  return (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ display: 'block' }}>
+      <path d="M5 9v6h4l5 4V5L9 9H5z" fill="currentColor" />
+      <path d="M15.5 8.5a4.5 4.5 0 010 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <path d="M17.75 6.25a7 7 0 010 11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
+}

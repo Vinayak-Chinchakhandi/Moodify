@@ -55,6 +55,13 @@ const BackgroundVideoPlayer = () => {
                 (global.queued || []).forEach((fn) => { try { fn(); } catch (e) {} });
                 global.queued = [];
                 try { window.dispatchEvent(new CustomEvent("moodify-player-ready-temp")); } catch (e) {}
+                // restore persisted volume if available
+                try {
+                  const v = Number(sessionStorage.getItem("moodifyVolume"));
+                  if (!Number.isNaN(v) && typeof playerRef.current.setVolume === 'function') {
+                    playerRef.current.setVolume(Number(v));
+                  }
+                } catch (e) {}
                 console.log("YouTube player ready (global)");
               },
               onStateChange: (e) => {
@@ -227,6 +234,16 @@ const BackgroundVideoPlayer = () => {
     window.addEventListener("moodify-enter-visual-stream", handleEnterVisualStream);
     window.addEventListener("moodify-exit-visual-stream", handleExitVisualStream);
     window.addEventListener("moodify-control-play-pause", handleControlPlayPause);
+    // volume control: expects detail.volume in 0..1
+    const handleVolume = (e) => {
+      const v = Number(e?.detail?.volume);
+      if (Number.isNaN(v)) return;
+      const vol100 = Math.max(0, Math.min(1, v)) * 100;
+      callWhenReady(() => {
+        try { if (playerRef.current && typeof playerRef.current.setVolume === 'function') playerRef.current.setVolume(Math.round(vol100)); } catch (err) {}
+      });
+    };
+    window.addEventListener("moodify-volume", handleVolume);
 
     const handleInternalNext = (e) => {
       const { song: s, playlist: p, index } = e.detail || {};
@@ -243,6 +260,7 @@ const BackgroundVideoPlayer = () => {
       window.removeEventListener("moodify-enter-visual-stream", handleEnterVisualStream);
       window.removeEventListener("moodify-exit-visual-stream", handleExitVisualStream);
       window.removeEventListener("moodify-control-play-pause", handleControlPlayPause);
+      window.removeEventListener("moodify-volume", handleVolume);
       window.removeEventListener("moodify-next-track-internal", handleInternalNext);
     };
   }, []);
