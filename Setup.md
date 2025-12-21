@@ -69,6 +69,7 @@ MOODIFY/
 │   │   ├── firebase/
 │   │   │   ├── auth.js
 │   │   │   ├── firebase.js
+│   │   │   ├── firestore.js
 │   │   │   └── storage.js
 │   │   │
 │   │   ├── pages/
