@@ -22,7 +22,7 @@ It combines AI mood detection, chat-based interaction, manual selection, and rea
 - Language-aware suggestions (based on user profile)  
 - Artist-based and manual search  
 - YouTube-powered streaming  
-- iTunes-based metadata search  
+- iTunes-based metadata searching   
 
 ---
 
