@@ -2,15 +2,15 @@ import React from "react";
 
 const Loader = ({ message = "Loading..." }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[200px] w-full">
+    <div className="flex flex-col items-center justify-center min-h-[200px] sm:min-h-[250px] w-full px-4 text-center">
       {/* 🌈 Spinning Gradient Ring */}
-      <div className="relative w-16 h-16">
+      <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 animate-pulse">
         <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-cyan-400 border-l-pink-500 animate-spin" />
         <div className="absolute inset-2 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 blur-md opacity-70 animate-pulse" />
       </div>
 
       {/* ✨ Loading Text */}
-      <p className="mt-5 text-white text-lg font-semibold gradient-text animate-pulse">
+      <p className="mt-4 sm:mt-5 text-base sm:text-lg md:text-xl font-semibold gradient-text animate-pulse text-center">
         {message}
       </p>
 

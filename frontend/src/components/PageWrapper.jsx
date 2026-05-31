@@ -58,14 +58,14 @@ const PageWrapper = ({ children }) => {
         setGlobalPlaylist(savedPlaylist);
         setPlayerKey(Date.now());
         setIsPlaying(savedPlaying);
-        try { window.dispatchEvent(new CustomEvent("moodify-start", { detail: { videoId: savedSong?.videoId } })); } catch {}
+        try { window.dispatchEvent(new CustomEvent("moodify-start", { detail: { videoId: savedSong?.videoId } })); } catch { }
       } else if (savedSong && savedSong.videoId) {
         setGlobalPlaylist([savedSong]);
         setPlayerKey(Date.now());
         setIsPlaying(savedPlaying);
-        try { window.dispatchEvent(new CustomEvent("moodify-start", { detail: { videoId: savedSong.videoId } })); } catch {}
+        try { window.dispatchEvent(new CustomEvent("moodify-start", { detail: { videoId: savedSong.videoId } })); } catch { }
       }
-    } catch (err) {}
+    } catch (err) { }
   }, []);
 
   // Handle moodify-play events: accept { song, playlist, index }
@@ -96,7 +96,7 @@ const PageWrapper = ({ children }) => {
         sessionStorage.setItem("moodifyIsPlaying", "true");
         window.MoodifyCurrentVideoId = song.videoId;
         window.dispatchEvent(new CustomEvent("moodify-start", { detail: { videoId: song.videoId } }));
-      } catch (err) {}
+      } catch (err) { }
     };
 
     window.addEventListener("moodify-play", handler);
@@ -120,7 +120,7 @@ const PageWrapper = ({ children }) => {
           if (saved && saved.videoId && currentSong && currentSong.videoId === saved.videoId && saved.currentTime > 0) {
             window.dispatchEvent(new CustomEvent("moodify-seek", { detail: { time: saved.currentTime } }));
           }
-        } catch (err) {}
+        } catch (err) { }
       }, 300);
     };
     window.addEventListener("focus", handlePageFocus);
@@ -132,9 +132,9 @@ const PageWrapper = ({ children }) => {
   const showPlayer = !hidePlayer;
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center text-white overflow-hidden">
+    <div className="relative min-h-screen flex flex-col text-white overflow-x-hidden">
       {location.pathname !== "/intro" && (
-        <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none bg-[radial-gradient(circle_at_center,#0a0a1a,#000)]">
+        <div className="absolute inset-0 overflow-x-hidden -z-10 pointer-events-none bg-[radial-gradient(circle_at_center,#0a0a1a,#000)]">
           {notes.map((n) => (
             <span key={n.id} style={{ position: "absolute", top: `${n.y}%`, left: `${n.x}%`, fontSize: "26px", color: n.color, opacity: 0.85, animation: `floatNote-${n.id} ${n.duration}s ease-in-out ${n.delay}s infinite alternate` }}>
               {n.symbol}
@@ -150,8 +150,21 @@ const PageWrapper = ({ children }) => {
         </div>
       )}
 
-      <main className="relative z-10 w-full flex flex-col items-center justify-center">{children}</main>
-
+      <main
+        className="
+  relative
+  z-10
+  w-full
+  flex
+  flex-col
+  items-center
+  justify-center
+  pb-40
+  md:pb-36
+  "
+      >
+        {children}
+      </main>
       {showPlayer && <BackgroundVideoPlayer currentSong={globalPlaylist[0]} isPlaying={isPlaying} />}
 
       {showPlayer && <AudioPlayer key={playerKey} playlist={globalPlaylist} isGlobal={true} />}

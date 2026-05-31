@@ -7,7 +7,7 @@ const WebcamCapture = ({ onFrame, mirror = false }) => {
   const canvasRef = useRef(null);
   const intervalRef = useRef(null);
 
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent) && window.innerWidth < 1024;
+  const isMobile = window.innerWidth < 768;
   const constraints = {
     video: isMobile
       ? { facingMode: "user", width: { ideal: 720 }, height: { ideal: 1280 } }
@@ -69,7 +69,7 @@ const WebcamCapture = ({ onFrame, mirror = false }) => {
         intervalRef.current = null;
       }
       if (videoRef.current) {
-        try { videoRef.current.srcObject = null; } catch (e) {}
+        try { videoRef.current.srcObject = null; } catch (e) { }
         videoRef.current.style.transform = "none";
       }
       canvasRef.current = null;
@@ -89,14 +89,39 @@ const WebcamCapture = ({ onFrame, mirror = false }) => {
   }, [mirror, onFrame]);
 
   return (
-    <div className="relative w-full max-w-md rounded-xl overflow-hidden">
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="w-full aspect-video object-cover rounded-xl"
-      />
+    <div
+      className="
+      relative
+      w-full
+      max-w-sm
+      sm:max-w-md
+      md:max-w-lg
+      mx-auto
+      rounded-xl
+      overflow-hidden
+      p-[2px]
+      bg-gradient-to-r
+      from-cyan-500
+      via-pink-500
+      to-orange-400
+      shadow-[0_0_25px_rgba(255,0,255,0.25)]
+    "
+    >
+      <div className="bg-black rounded-xl overflow-hidden">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="
+          w-full
+          aspect-[4/3]
+          sm:aspect-video
+          object-cover
+          rounded-xl
+        "
+        />
+      </div>
     </div>
   );
 };

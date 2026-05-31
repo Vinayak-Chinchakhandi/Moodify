@@ -66,7 +66,7 @@ const ChatMood = () => {
     setTimeout(() => {
       try {
         chatRef.current.scrollTop = chatRef.current.scrollHeight;
-      } catch (e) {}
+      } catch (e) { }
     }, 80);
   }, [messages, typing]);
 
@@ -83,7 +83,7 @@ const ChatMood = () => {
           const data = snap.data();
           setUserLanguages([data.language1, data.language2, data.language3].filter(Boolean));
         }
-      } catch (e) {}
+      } catch (e) { }
     })();
     return () => (mounted = false);
   }, []);
@@ -193,7 +193,8 @@ const ChatMood = () => {
 
   const Bubble = ({ m }) => {
     const isBot = m.sender === "bot";
-    const bubbleBase = "max-w-[78%] break-words px-4 py-3 rounded-2xl shadow-sm leading-tight text-sm";
+    const bubbleBase =
+      "max-w-[85%] sm:max-w-[78%] break-words px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-sm leading-tight text-xs sm:text-sm";
     if (isBot) {
       return (
         <div className="flex w-full my-2">
@@ -203,7 +204,7 @@ const ChatMood = () => {
           <div className={`${bubbleBase} bg-white/6 text-gray-100`}>
             {m.meta && m.meta.highlight ? (
               <div style={{ display: "inline-block", background: "linear-gradient(90deg,#00ffff,#ff00ff,#ff6600)", WebkitBackgroundClip: "text", color: "transparent" }}>
-                <span className="font-extrabold text-2xl">{m.text}</span>
+                <span className="font-extrabold text-xl sm:text-2xl">{m.text}</span>
               </div>
             ) : (
               <span>{m.text}</span>
@@ -239,16 +240,43 @@ const ChatMood = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8">
-        <div className="w-full max-w-2xl glass-card p-6 flex flex-col min-h-[620px] backdrop-blur-2xl border border-white/10 rounded-2xl">
+      <div className="flex flex-col items-center justify-center min-h-screen px-3 sm:px-4 py-4 sm:py-8">
+        <div
+          className="
+  w-full
+  max-w-2xl
+  glass-card
+  p-4
+  sm:p-6
+  flex
+  flex-col
+  min-h-[520px]
+  sm:min-h-[620px]
+  backdrop-blur-2xl
+  border
+  border-white/10
+  rounded-2xl
+"
+        >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-2xl font-extrabold gradient-text">Mood Check — Chat</h2>
+            <h2 className="text-xl sm:text-2xl font-extrabold gradient-text">Mood Check — Chat</h2>
             <div style={{ width: 48 }} />
           </div>
 
           <div
             ref={chatRef}
-            className="flex-1 h-[460px] overflow-y-auto px-3 py-3 rounded-lg mb-4 scroll-smooth"
+            className="
+flex-1
+h-[350px]
+sm:h-[460px]
+overflow-y-auto
+px-2
+sm:px-3
+py-3
+rounded-lg
+mb-4
+scroll-smooth
+"
             aria-live="polite"
           >
             {messages.map((m) => (
@@ -259,11 +287,11 @@ const ChatMood = () => {
 
             {/* Greeting choices: only shown when at greeting stage and NO hasn't been chosen */}
             {currentQuestionIndex === -1 && !typing && !showBackOnNo && !completed && (
-              <div className="mt-3 flex gap-3">
+              <div className="mt-3 flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => handleGreetingChoice("yes")}
                   disabled={disabledOptions}
-                  className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 text-white font-semibold"
+                  className="w-full sm:w-auto px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 text-white font-semibold"
                 >
                   Yes — Start
                 </button>
@@ -271,7 +299,7 @@ const ChatMood = () => {
                 <button
                   onClick={() => handleGreetingChoice("no")}
                   disabled={disabledOptions}
-                  className="px-4 py-2 rounded-full border border-white/30 text-gray-200"
+                  className="w-full sm:w-auto px-4 py-2 rounded-full border border-white/30 text-gray-200"
                 >
                   No — Maybe later
                 </button>
@@ -295,8 +323,21 @@ const ChatMood = () => {
                     key={i}
                     onClick={() => onOptionClick(i)}
                     disabled={disabledOptions}
-                    className="text-left px-4 py-3 rounded-xl text-sm font-semibold border border-white/10 bg-white/8 hover:bg-white/16 transition"
-                  >
+                    className="
+text-left
+px-3
+sm:px-4
+py-3
+rounded-xl
+text-xs
+sm:text-sm
+font-semibold
+border
+border-white/10
+bg-white/8
+hover:bg-white/16
+transition
+"                  >
                     {opt}
                   </button>
                 ))}
@@ -308,14 +349,44 @@ const ChatMood = () => {
           <div className="mt-2">
             {/* show final action buttons only when completed */}
             {completed && detectedMood && (
-              <div className="flex w-full items-center justify-center gap-3">
-                <button onClick={handleFindSongs} className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 text-white font-semibold">
+              <div
+                className="
+  flex
+  flex-col
+  sm:flex-row
+  w-full
+  items-center
+  justify-center
+  gap-3
+"
+              >
+                <button onClick={handleFindSongs} className="w-full sm:w-auto px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 text-white font-semibold">
                   Find Songs
                 </button>
-                <button onClick={handleRetake} className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-gray-200">
+                <button onClick={handleRetake} className="w-full sm:w-auto px-4 py-2 rounded-full bg-white/10 border border-white/20 text-gray-200">
                   Retake
                 </button>
-                <Link to="/home" className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all">
+                <Link
+                  to="/home"
+                  className="
+  w-full sm:w-auto
+  flex items-center justify-center
+  px-4 sm:px-6
+  py-2 sm:py-3
+  rounded-full
+  text-sm sm:text-base
+  font-semibold
+  bg-white/10
+  border border-white/20
+  backdrop-blur-xl
+  text-gray-300
+  hover:text-cyan-400
+  hover:bg-white/20
+  hover:scale-105
+  transition-all
+  duration-300
+  "
+                >
                   ⬅ Back to Home
                 </Link>
               </div>
@@ -328,13 +399,6 @@ const ChatMood = () => {
             {currentQuestionIndex === -1 && !showBackOnNo && (
               <div className="text-xs text-gray-400 mt-3 text-center">This quick chat helps us recommend songs that fit your mood.</div>
             )}
-          </div>
-
-          {/* EMPTY spacer card to prevent footer overlap with action buttons (audio player) */}
-          <div className="mt-4">
-            <div className="glass-card w-full rounded-lg p-2 border border-white/6" style={{ height: 88 }}>
-              {/* empty block - reserved space so footer doesn't hide action buttons */}
-            </div>
           </div>
         </div>
       </div>

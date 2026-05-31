@@ -202,49 +202,49 @@ const Recommendations = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen text-white px-3 py-2">
-      <div className="glass-card p-4 rounded-lg border border-white/10 mb-2">
-        <h2 className="text-2xl font-extrabold mb-1 gradient-text">Your Recommended Songs 🎵</h2>
-        <p className="text-gray-300 text-xs">
+    <div className="flex flex-col min-h-screen text-white px-3 sm:px-4 md:px-6 py-3">
+      <div className="glass-card p-4 sm:p-5 md:p-6 rounded-2xl border border-white/10 mb-4">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold mb-2 gradient-text">Your Recommended Songs 🎵</h2>
+        <p className="text-gray-300 text-xs sm:text-sm md:text-base leading-relaxed">
           Based on {mood && <span className="text-pink-400">Mood: {mood}</span>}
           {genre && <span className="text-cyan-400 ml-2">Genre: {genre}</span>}
           {artist && <span className="text-orange-400 ml-2">Artist: {artist}</span>}
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto mb-20 pr-2">
+      <div className="flex-1 mb-6 pr-0 sm:pr-2">
         {songs.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-400">
             <p>No songs found. Try adjusting your preferences.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
             {songs.map((song) => (
               <div
                 key={song.videoId}
-                className="glass-card p-3 rounded-lg border border-white/10 overflow-hidden hover:border-cyan-400/50 transition-all group relative cursor-pointer"
+                className="glass-card p-3 sm:p-4 rounded-xl border border-white/10 overflow-hidden hover:border-cyan-400/50 transition-all group relative cursor-pointer"
                 onClick={() => handlePlaySong(song)}
               >
                 <div className="relative">
-                  <img src={song.thumbnail} alt={song.title} className="w-full h-28 object-cover rounded-lg mb-2 transition-transform" />
+                  <img src={song.thumbnail} alt={song.title} className="w-full h-40 sm:h-44 md:h-48 object-cover rounded-lg mb-2 transition-transform" />
                   <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="text-4xl">▶</div>
                   </div>
                 </div>
 
-                <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2">{song.title}</h3>
-                <p className="text-xs text-gray-400 mb-3 line-clamp-1">{song.artist}</p>
+                <h3 className="text-sm sm:text-base font-semibold text-white mb-1 line-clamp-2">{song.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-400 mb-3 line-clamp-1">{song.artist}</p>
 
-                <div className="flex gap-1">
-                  <button onClick={(e) => { e.stopPropagation(); handleLike(song); }} className={`flex-1 px-1.5 py-1 rounded text-xs font-semibold transition-all ${favorites.some((fav) => fav.videoId === song.videoId) ? "bg-pink-500 text-white" : "bg-white/10 text-gray-300 hover:bg-white/20"}`}>
+                <div className="flex gap-2 mt-auto">
+                  <button onClick={(e) => { e.stopPropagation(); handleLike(song); }} className={`flex-1 px-2 py-2 rounded text-sm font-semibold transition-all ${favorites.some((fav) => fav.videoId === song.videoId) ? "bg-pink-500 text-white" : "bg-white/10 text-gray-300 hover:bg-white/20"}`}>
                     {favorites.some((fav) => fav.videoId === song.videoId) ? "❤️" : "🤍"}
                   </button>
 
-                  <button onClick={(e) => { e.stopPropagation(); handleAddToPlaylist(song); }} className="flex-1 px-1.5 py-1 rounded text-xs font-semibold bg-white/10 text-gray-300 hover:bg-white/20 transition-all">
+                  <button onClick={(e) => { e.stopPropagation(); handleAddToPlaylist(song); }} className="flex-1 px-2 py-2 text-sm rounded text-xs font-semibold bg-white/10 text-gray-300 hover:bg-white/20 transition-all">
                     📋
                   </button>
 
-                  <button onClick={(e) => { e.stopPropagation(); handlePlaySong(song); }} className="flex-1 px-1.5 py-1 rounded text-xs font-semibold bg-cyan-500/30 text-cyan-300 hover:bg-cyan-500/50 transition-all">
+                  <button onClick={(e) => { e.stopPropagation(); handlePlaySong(song); }} className="flex-1 px-2 py-2 text-sm rounded text-xs font-semibold bg-cyan-500/30 text-cyan-300 hover:bg-cyan-500/50 transition-all">
                     ▶
                   </button>
                 </div>
@@ -254,8 +254,29 @@ const Recommendations = () => {
         )}
       </div>
 
-      <div className="fixed top-6 right-6 z-40">
-        <button onClick={handleBack} className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all">⬅ Back</button>
+      <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-40">
+        <button
+          onClick={handleBack}
+          className="
+    px-4 sm:px-6
+    py-2 sm:py-3
+    rounded-full
+    text-sm sm:text-base
+    font-semibold
+    bg-white/10
+    border border-white/20
+    backdrop-blur-xl
+    text-gray-300
+    hover:text-cyan-400
+    hover:bg-white/20
+    hover:scale-105
+    transition-all
+    duration-300
+    shadow-lg
+  "
+        >
+          ⬅ Back
+        </button>
       </div>
 
       {playlistModal.show && playlistModal.song && (
@@ -306,7 +327,7 @@ function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylist
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="glass-card p-6 rounded-2xl border border-white/10 max-w-md w-full">
+      <div className="glass-card p-4 sm:p-6 rounded-2xl border border-white/10 w-full max-w-md">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-extrabold text-transparent bg-clip-text gradient-text">Add to Playlist</h3>
           <button onClick={() => setPlaylistModal({ show: false, song: null })} className="text-sm text-gray-300 hover:text-white">Close</button>
@@ -329,13 +350,13 @@ function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylist
 
         <div className="border-t border-white/10 pt-4 mb-4">
           <label className="text-sm text-gray-300 mb-2 block">Create new playlist</label>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input type="text" value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)} placeholder="Playlist name..." className="flex-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-white placeholder-gray-500 text-sm" />
             <button onClick={createAndSave} className="px-4 py-2 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold">Create & Save</button>
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button onClick={onConfirm} className="flex-1 px-4 py-2 rounded bg-cyan-500/30 text-cyan-200 font-semibold hover:bg-cyan-500/50">Save</button>
           <button onClick={() => setPlaylistModal({ show: false, song: null })} className="flex-1 px-3 py-2 rounded bg-white/10 text-gray-300 hover:bg-white/20">Cancel</button>
         </div>

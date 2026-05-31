@@ -150,7 +150,7 @@ const Profile = () => {
         try {
           await auth.currentUser.reload();
           setProviderIds(auth.currentUser.providerData.map((p) => p.providerId));
-        } catch (e) {}
+        } catch (e) { }
 
         return alert("Account linking failed: Google account email does not match your registered email.");
       }
@@ -196,8 +196,8 @@ const Profile = () => {
     const uid = auth.currentUser.uid;
 
     try {
-      await deleteDoc(doc(db, "users", uid)).catch(() => {});
-      await deleteObject(ref(storage, `profilePics/${uid}`)).catch(() => {});
+      await deleteDoc(doc(db, "users", uid)).catch(() => { });
+      await deleteObject(ref(storage, `profilePics/${uid}`)).catch(() => { });
       await deleteUser(auth.currentUser);
 
       alert("Account deleted.");
@@ -218,11 +218,23 @@ const Profile = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center min-h-screen text-white">
-        <div className="glass-card w-full max-w-3xl text-center p-10 relative">
+      <div className="flex flex-col items-center justify-center min-h-screen text-white px-3 sm:px-4 py-4 sm:py-8">
+        <div
+          className="
+  glass-card
+  w-full
+  max-w-3xl
+  text-center
+  p-4
+  sm:p-6
+  md:p-10
+  relative
+  rounded-2xl
+"
+        >
           {/* Top-left Save/Cancel controls (visible only while editing) */}
           {editing && (
-            <div className="absolute top-4 left-4 flex items-center gap-2 z-50">
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-2 z-50">
               <button
                 onClick={() => {
                   // trigger form submit
@@ -234,7 +246,7 @@ const Profile = () => {
                   }
                 }}
                 title="Save"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg hover:scale-105 transition"
+                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg hover:scale-105 transition"
               >
                 ✅
               </button>
@@ -244,20 +256,20 @@ const Profile = () => {
                   setEditing(false);
                 }}
                 title="Cancel"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
+                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/20 transition"
               >
                 ❌
               </button>
             </div>
           )}
 
-          <h2 className="text-4xl font-extrabold mb-6 gradient-text">Your Profile 👤</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 gradient-text">Your Profile 👤</h2>
 
           {/* PROFILE PIC */}
-          <div className="relative w-32 h-32 mx-auto mb-6">
+          <div className="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-6">
             <img
               src={form.profilePic || "/assets/default-avatar.png"}
-              className="w-32 h-32 rounded-full border-4 border-cyan-400 object-cover"
+              className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover"
             />
 
             {editing && (
@@ -271,40 +283,99 @@ const Profile = () => {
           {/* VIEW MODE */}
           {!editing ? (
             <>
-              <p className="text-gray-300 text-lg mb-4">Name: {user.name}</p>
-              <p className="text-gray-300 text-lg mb-6">Email: {user.email}</p>
+              <p className="text-gray-300 text-base sm:text-lg mb-4 break-all">Name: {user.name}</p>
+              <p className="text-gray-300 text-base sm:text-lg mb-4 break-all">Email: {user.email}</p>
 
-              <h3 className="text-xl font-semibold text-cyan-300 mb-3">🎧 Language Preferences</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-cyan-300 mb-3">🎧 Language Preferences</h3>
               <p className="text-gray-300 mb-6">
                 {user.language1}, {user.language2}, {user.language3}
               </p>
 
               {/* 2x2 GRID BUTTONS */}
-              <div className="grid grid-cols-2 gap-4 place-items-center mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                 <button
                   onClick={() => setEditing(true)}
-                  className="px-6 py-3 rounded-full bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 hover:scale-105 transition"
+                  className="
+  w-full
+  flex items-center justify-center
+  gap-2
+  px-6 py-3
+  rounded-full
+  font-semibold
+  bg-gradient-to-r
+  from-cyan-500
+  via-pink-500
+  to-orange-400
+  text-white
+  shadow-[0_0_20px_rgba(255,0,255,0.3)]
+  hover:scale-105
+  transition-all
+  "
                 >
-                  Edit Profile
+                  ✏️ Edit Profile
                 </button>
 
                 <button
                   onClick={handleDeleteAccount}
-                  className="px-6 py-3 rounded-full bg-gradient-to-r from-red-600 to-orange-500 hover:scale-105 transition"
+                  className="
+  w-full
+  flex items-center justify-center
+  gap-2
+  px-6 py-3
+  rounded-full
+  font-semibold
+  bg-gradient-to-r
+  from-red-600
+  to-orange-500
+  text-white
+  shadow-[0_0_20px_rgba(255,80,80,0.3)]
+  hover:scale-105
+  transition-all
+  "
                 >
-                  Delete Account
+                  🗑 Delete Account
                 </button>
 
                 <button
                   onClick={handleLogout}
-                  className="px-6 py-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
+                  className="
+  w-full
+  flex items-center justify-center
+  gap-2
+  px-6 py-3
+  rounded-full
+  font-semibold
+  bg-white/10
+  border border-white/20
+  backdrop-blur-xl
+  text-gray-300
+  hover:bg-white/20
+  hover:text-orange-400
+  hover:scale-105
+  transition-all
+  "
                 >
-                  Logout
+                  🚪 Logout
                 </button>
 
                 <Link
                   to="/home"
-                  className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all"
+                  className="
+  w-full
+  flex items-center justify-center
+  gap-2
+  px-6 py-3
+  rounded-full
+  font-semibold
+  bg-white/10
+  border border-white/20
+  backdrop-blur-xl
+  text-gray-300
+  hover:bg-white/20
+  hover:text-cyan-400
+  hover:scale-105
+  transition-all
+  "
                 >
                   ⬅ Back to Home
                 </Link>
@@ -321,7 +392,7 @@ const Profile = () => {
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="Your Name"
-                    className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white placeholder-gray-300 focus:outline-none"
+                    className="w-full px-3 sm:px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white placeholder-gray-300 focus:outline-none"
                   />
                 </div>
 
@@ -330,7 +401,7 @@ const Profile = () => {
                   type="email"
                   value={form.email}
                   disabled
-                  className="w-full px-4 py-3 rounded-lg bg-white/10 text-gray-300 cursor-not-allowed"
+                  className="w-full px-3 sm:px-4 py-3 rounded-lg bg-white/10 text-gray-300 cursor-not-allowed"
                 />
 
                 {/* PASSWORD SECTION */}
@@ -345,7 +416,7 @@ const Profile = () => {
                         placeholder="Set new password for Moodify"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
+                        className="w-full px-3 sm:px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
                       />
                     </div>
                   </div>
@@ -357,7 +428,7 @@ const Profile = () => {
                         placeholder="Current password"
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
+                        className="w-full px-3 sm:px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
                       />
                     </div>
 
@@ -367,7 +438,7 @@ const Profile = () => {
                         placeholder="New password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
+                        className="w-full px-3 sm:px-4 py-3 rounded-lg bg-[#0a0a1a]/90 text-white"
                       />
                     </div>
                   </>
@@ -396,15 +467,24 @@ const Profile = () => {
                     <button
                       type="button"
                       onClick={handleLinkGoogle}
-                      className="px-6 py-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition"
+                      className="
+w-full
+sm:w-auto
+px-6
+py-3
+rounded-full
+bg-white/10
+border border-white/20
+hover:bg-white/20
+transition
+"
                     >
                       Link Google
                     </button>
                   </div>
                 )}
 
-                {/* REPLACED ORIGINAL BUTTONS WITH A SPACER so layout does not shift */}
-                <div className="h-16" aria-hidden />
+
               </form>
             </>
           )}

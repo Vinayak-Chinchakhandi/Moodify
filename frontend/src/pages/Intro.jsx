@@ -63,15 +63,14 @@ const Intro = () => {
 
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,#0a0a1a,#000)] z-[9999] transition-opacity duration-[1500ms] ${
-        fadeOut ? "opacity-0" : "opacity-100"
-      }`}
+      className={`fixed inset-0 flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,#0a0a1a,#000)] z-[9999] transition-opacity duration-[1500ms] ${fadeOut ? "opacity-0" : "opacity-100"
+        }`}
     >
       {!started ? (
         <>
           {/* 🌌 Floating Particles */}
           <div className="absolute inset-0 overflow-hidden -z-10">
-            {[...Array(25)].map((_, i) => (
+            {[...Array(15)].map((_, i) => (
               <div
                 key={i}
                 className="absolute w-2 h-2 rounded-full opacity-40 animate-float"
@@ -88,20 +87,65 @@ const Intro = () => {
 
           {/* 🎵 Logo Section */}
           <div
-            className="relative z-10 flex flex-col items-center justify-center gap-8 animate-fadeInUp"
-            onClick={startVideo}
+            className="
+relative
+z-10
+flex
+flex-col
+items-center
+justify-center
+gap-4
+sm:gap-6
+md:gap-8
+px-4
+text-center
+animate-fadeInUp
+"            onClick={startVideo}
           >
             {/* ✨ Glowing Aura */}
-            <div className="absolute w-[340px] h-[340px] rounded-full bg-[radial-gradient(circle,rgba(0,255,255,0.5),rgba(255,0,204,0.25),transparent)] blur-3xl animate-pulseSlow" />
+            <div className="absolute w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[340px] md:h-[340px] rounded-full bg-[radial-gradient(circle,rgba(0,255,255,0.5),rgba(255,0,204,0.25),transparent)] blur-3xl animate-pulseSlow" />
 
             <img
               src={logo}
               alt="Moodify Logo"
-              className="w-80 h-80 rounded-full object-cover transition-transform duration-300 hover:scale-105 animate-logoGlow relative z-10 cursor-pointer"
-            />
+              className="
+w-52 h-52
+sm:w-64 sm:h-64
+md:w-80 md:h-80
+max-w-full
+rounded-full
+object-cover
+transition-transform
+duration-300
+hover:scale-105
+animate-logoGlow
+relative
+z-10
+cursor-pointer
+"/>
 
             {/* 🌈 Shimmer Text */}
-            <h1 className="text-2xl md:text-3xl font-semibold uppercase tracking-wider select-none bg-gradient-to-r from-cyan-400 via-pink-500 to-orange-400 bg-[length:200%_auto] animate-shineText bg-clip-text text-transparent">
+            <h1 className="
+text-lg
+sm:text-xl
+md:text-2xl
+lg:text-3xl
+font-semibold
+uppercase
+tracking-wide
+sm:tracking-wider
+text-center
+px-4
+select-none
+bg-gradient-to-r
+from-cyan-400
+via-pink-500
+to-orange-400
+bg-[length:200%_auto]
+animate-shineText
+bg-clip-text
+text-transparent
+">
               Tap to Begin Experience
             </h1>
           </div>
@@ -109,8 +153,30 @@ const Intro = () => {
           {/* 🕹 Skip Intro Button (looks elegant, bottom-right) */}
           <button
             onClick={navigateToLogin}
-            className="absolute bottom-10 right-10 px-6 py-2 rounded-full text-sm bg-white/10 hover:bg-white/20 text-gray-300 border border-white/20 transition-all backdrop-blur-sm shadow-lg"
-          >
+            className="
+absolute
+bottom-4
+right-4
+sm:bottom-6
+sm:right-6
+md:bottom-10
+md:right-10
+px-4
+sm:px-5
+md:px-6
+py-2
+rounded-full
+text-xs
+sm:text-sm
+bg-white/10
+hover:bg-white/20
+text-gray-300
+border
+border-white/20
+transition-all
+backdrop-blur-sm
+shadow-lg
+"          >
             Skip Intro ⏭
           </button>
         </>

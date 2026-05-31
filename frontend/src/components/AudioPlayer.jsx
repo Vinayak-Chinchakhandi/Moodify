@@ -194,11 +194,11 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl z-50">
-        <div className="bg-gradient-to-r from-cyan-900/80 via-purple-900/80 to-orange-900/80 backdrop-blur-lg border border-white/20 rounded-xl p-4 shadow-2xl shadow-purple-900/50">
+      <div className="fixed bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 w-[98%] sm:w-[95%] max-w-5xl z-50">
+        <div className="bg-gradient-to-r from-cyan-900/80 via-purple-900/80 to-orange-900/80 backdrop-blur-lg border border-white/20 rounded-xl p-2 sm:p-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-purple-500 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-cyan-500 to-purple-500 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
                 {currentSong?.thumbnail ? (
                   <img src={currentSong.thumbnail} alt={currentSong.title || "cover"} className="w-full h-full object-cover" />
                 ) : (
@@ -206,19 +206,19 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <h4 className="text-white font-bold truncate text-sm md:text-base">{currentSong?.title || "No song"}</h4>
-                <p className="text-cyan-200 text-xs md:text-sm truncate">{currentSong?.artist || ""}</p>
+                <h4 className="text-white font-bold truncate text-xs sm:text-sm md:text-base">{currentSong?.title || "No song"}</h4>
+                <p className="text-cyan-200 text-[10px] sm:text-xs md:text-sm truncate">{currentSong?.artist || ""}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <button onClick={handlePrev} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-cyan-300 hover:text-white" title="Previous"><SkipBack size={18} /></button>
-              <button onClick={handlePlayPause} className="p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white transition-all shadow-lg" title={isPlaying ? "Pause" : "Play"}>{isPlaying ? <Pause size={18} /> : <Play size={18} />}</button>
-              <button onClick={handleNext} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-cyan-300 hover:text-white" title="Next"><SkipForward size={18} /></button>
-              <button onClick={handleStream} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-orange-300 hover:text-orange-100 flex items-center gap-1" title="Play on Stream"><ExternalLink size={18} /></button>
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <button onClick={handlePrev} className="p-1.5 sm:p-2 rounded-lg hover:bg-white/20 transition-colors text-cyan-300 hover:text-white" title="Previous"><SkipBack size={16} className="sm:w-[18px] sm:h-[18px]" /></button>
+              <button onClick={handlePlayPause} className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white transition-all shadow-lg" title={isPlaying ? "Pause" : "Play"}>{isPlaying ? <Pause size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Play size={16} className="sm:w-[18px] sm:h-[18px]" />}</button>
+              <button onClick={handleNext} className="p-1.5 sm:p-2 rounded-lg hover:bg-white/20 transition-colors text-cyan-300 hover:text-white" title="Next"><SkipForward size={16} className="sm:w-[18px] sm:h-[18px]" /></button>
+              <button onClick={handleStream} className="p-1.5 sm:p-2 rounded-lg hover:bg-white/20 transition-colors text-orange-300 hover:text-orange-100 flex items-center gap-1" title="Play on Stream"><ExternalLink size={16} className="sm:w-[18px] sm:h-[18px]" /></button>
 
               <div className="relative">
-                <button onClick={toggleVolume} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-gray-300 hover:text-white" title="Volume"><CustomVolumeIcon size={22} /></button>
+                <button onClick={toggleVolume} className="p-1.5 sm:p-2 rounded-lg hover:bg-white/20 transition-colors text-gray-300 hover:text-white" title="Volume"><CustomVolumeIcon size={22} /></button>
                 {showVolume && (
                   <div ref={volumeRef} className="absolute bottom-14 right-0 w-44 p-3 bg-white/5 border border-white/10 rounded-lg shadow-lg">
                     <div className="flex items-center gap-3">
@@ -229,8 +229,8 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
                 )}
               </div>
 
-              <button onClick={() => handleAddToPlaylist(currentSong)} className="p-2 rounded-lg hover:bg-white/20 transition-colors text-gray-300 hover:text-white" title="Add to playlist"><List size={18} /></button>
-              <button onClick={handleLike} className={`p-2 rounded-lg transition-all ${isLiked ? "bg-pink-600/80 text-white shadow-lg" : "hover:bg-white/20 text-gray-300 hover:text-pink-400"}`} title={isLiked ? "Unlike" : "Like"}><Heart size={18} fill={isLiked ? "currentColor" : "none"} /></button>
+              <button onClick={() => handleAddToPlaylist(currentSong)} className="p-1.5 sm:p-2 rounded-lg hover:bg-white/20 transition-colors text-gray-300 hover:text-white" title="Add to playlist"><List size={16} className="sm:w-[18px] sm:h-[18px]" /></button>
+              <button onClick={handleLike} className={`p-1.5 sm:p-2 rounded-lg transition-all ${isLiked ? "bg-pink-600/80 text-white shadow-lg" : "hover:bg-white/20 text-gray-300 hover:text-pink-400"}`} title={isLiked ? "Unlike" : "Like"}><Heart size={16} className="sm:w-[18px] sm:h-[18px]" fill={isLiked ? "currentColor" : "none"} /></button>
             </div>
           </div>
         </div>
@@ -284,10 +284,25 @@ function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylist
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="glass-card p-6 rounded-2xl border border-white/10 max-w-md w-full">
+      <div className="glass-card p-4 sm:p-6 rounded-2xl border border-white/10 max-w-md w-full">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-extrabold text-transparent bg-clip-text gradient-text">Add to Playlist</h3>
-          <button onClick={() => setPlaylistModal({ show: false, song: null })} className="text-sm text-gray-300 hover:text-white">Close</button>
+          <h3 className="text-lg sm:text-xl font-extrabold text-transparent bg-clip-text gradient-text">Add to Playlist</h3>
+          <button
+            onClick={() => setPlaylistModal({ show: false, song: null })}
+            className="
+  px-3 py-1
+  rounded-lg
+  bg-white/10
+  border border-white/10
+  text-sm
+  text-gray-300
+  hover:bg-white/20
+  hover:text-white
+  transition-all
+  "
+          >
+            ✕
+          </button>
         </div>
 
         {playlists.length > 0 ? (
@@ -296,7 +311,7 @@ function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylist
               <button
                 key={pl.name}
                 onClick={() => setSelected(pl.name)}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-all border ${selected === pl.name ? 'border-cyan-400 bg-cyan-600/20 text-white' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-400 hover:bg-white/10'}`}>
+                className={`w-full text-center px-4 py-2 rounded-lg transition-all border ${selected === pl.name ? 'border-cyan-400 bg-cyan-600/20 text-white' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-400 hover:bg-white/10'}`}>
                 {pl.name}
               </button>
             ))}
@@ -307,15 +322,15 @@ function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylist
 
         <div className="border-t border-white/10 pt-4 mb-4">
           <label className="text-sm text-gray-300 mb-2 block">Create new playlist</label>
-          <div className="flex gap-2">
-            <input type="text" value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)} placeholder="Playlist name..." className="flex-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-white placeholder-gray-500 text-sm" />
-            <button onClick={createAndSave} className="px-4 py-2 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold">Create & Save</button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input type="text" value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)} placeholder="Playlist name..." className="flex-1 px-3 py-2.5 rounded bg-white/5 border border-white/10 text-white placeholder-gray-500 text-sm" />
+            <button onClick={createAndSave} className="w-full sm:w-auto px-4 py-2 rounded bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold">Create & Save</button>
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <button onClick={onConfirm} className="flex-1 px-4 py-2 rounded bg-cyan-500/30 text-cyan-200 font-semibold hover:bg-cyan-500/50">Save</button>
-          <button onClick={() => setPlaylistModal({ show: false, song: null })} className="flex-1 px-4 py-2 rounded bg-white/10 text-gray-300 hover:bg-white/20">Cancel</button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button onClick={onConfirm} className="flex-1 w-full sm:w-auto px-4 py-2 rounded bg-cyan-500/30 text-cyan-200 font-semibold hover:bg-cyan-500/50">Save</button>
+          <button onClick={() => setPlaylistModal({ show: false, song: null })} className="flex-1 w-full sm:w-auto px-4 py-2 rounded bg-white/10 text-gray-300 hover:bg-white/20">Cancel</button>
         </div>
       </div>
     </div>

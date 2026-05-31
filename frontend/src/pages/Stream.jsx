@@ -74,15 +74,37 @@ const Stream = () => {
 
   return (
     <PageWrapper>
-      <div className="flex flex-col items-center justify-start min-h-screen text-white px-4 py-6 pb-32">
-        <div className="w-full max-w-4xl mb-6 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all">
+      <div className="
+flex
+flex-col
+items-center
+justify-start
+min-h-screen
+text-white
+px-3
+sm:px-4
+md:px-6
+py-4
+sm:py-6
+" >
+        <div
+          className="
+w-full
+max-w-4xl
+mb-4
+sm:mb-6
+flex
+items-center
+justify-between
+"
+        >
+          <button onClick={() => navigate(-1)} className="px-4 py-2 sm:px-6 sm:py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all">
             ← Back
           </button>
         </div>
 
         {/* 🔥 Gradient Border Wrapper */}
-        <div className="w-full max-w-4xl rounded-2xl p-[3px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 shadow-2xl">
+        <div className="w-full max-w-4xl rounded-xl sm:rounded-2xl p-[3px] bg-gradient-to-r from-cyan-500 via-pink-500 to-orange-400 shadow-2xl">
 
           {/* Inner actual video container */}
           <div className="bg-black rounded-xl overflow-hidden">
@@ -107,7 +129,21 @@ const Stream = () => {
                   <div className="absolute inset-0 flex items-center justify-center z-40">
                     <button
                       onClick={handleUserPlay}
-                      className="px-8 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xl font-semibold shadow-lg"
+                      className="
+px-5
+py-3
+sm:px-8
+sm:py-4
+rounded-full
+bg-gradient-to-r
+from-cyan-500
+to-purple-500
+text-white
+text-base
+sm:text-xl
+font-semibold
+shadow-lg
+"
                     >
                       ▶ Play Video
                     </button>
@@ -119,9 +155,50 @@ const Stream = () => {
           </div>
         </div>
 
-        <div className="w-full max-w-4xl mt-6 px-4">
-          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-cyan-400 via-pink-500 to-orange-400 bg-clip-text text-transparent">{curSong.title}</h2>
-          <p className="text-lg font-bold mb-2 bg-gradient-to-r from-cyan-400 via-pink-500 to-orange-400 bg-clip-text text-transparent">{curSong.artist}</p>
+        <div
+          className="
+w-full
+max-w-4xl
+mt-4
+sm:mt-6
+px-2
+sm:px-4
+text-center
+sm:text-left
+"
+        >
+          <h2
+            className="
+text-xl
+sm:text-2xl
+md:text-3xl
+font-bold
+mb-2
+break-words
+bg-gradient-to-r
+from-cyan-400
+via-pink-500
+to-orange-400
+bg-clip-text
+text-transparent
+"
+          >{curSong.title}</h2>
+          <p
+            className="
+text-sm
+sm:text-base
+md:text-lg
+font-semibold
+mb-2
+break-words
+bg-gradient-to-r
+from-cyan-400
+via-pink-500
+to-orange-400
+bg-clip-text
+text-transparent
+"
+          >{curSong.artist}</p>
         </div>
       </div>
     </PageWrapper>

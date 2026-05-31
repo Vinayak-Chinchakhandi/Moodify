@@ -46,8 +46,23 @@ const PlaylistCard = ({ title, cover, description, onPlay, song, playlist = null
   const isPlaying = typeof window !== "undefined" && window.MoodifyCurrentVideoId === song?.videoId;
 
   return (
-    <div className="group relative w-64 bg-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_35px_rgba(255,0,255,0.3)] cursor-pointer" onClick={handleContainerClick}>
-      <div className="relative w-full h-48 overflow-hidden">
+    <div
+      className="
+  group
+  relative
+  w-full
+  max-w-[320px]
+  bg-white/5
+  rounded-2xl
+  overflow-hidden
+  transition-all
+  duration-300
+  hover:scale-105
+  hover:shadow-[0_0_35px_rgba(255,0,255,0.3)]
+  cursor-pointer
+  "
+    >
+      <div className="relative w-full h-48 sm:h-48 overflow-hidden">
         {resolvedCover ? (
           <img src={resolvedCover} alt={resolvedTitle} className={`object-cover w-full h-full transition-transform duration-500 ${isPlaying ? "scale-105" : "group-hover:scale-110"}`} />
         ) : (
@@ -62,14 +77,16 @@ const PlaylistCard = ({ title, cover, description, onPlay, song, playlist = null
 
         <div className={`absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity ${isPlaying ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
           <button className="p-4 rounded-full bg-black/70 text-white hover:bg-black/80 transition" onClick={handlePlayClick}>
-            {isPlaying ? <Pause size={28} /> : <Play size={28} />}
+            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
           </button>
         </div>
       </div>
 
       <div className="p-4 flex flex-col items-start gap-1">
-        <h3 className="text-lg font-semibold gradient-text">{resolvedTitle}</h3>
-        <p className="text-gray-400 text-sm line-clamp-2">{resolvedDescription}</p>
+        <h3 className="text-base
+sm:text-lg font-semibold gradient-text">{resolvedTitle}</h3>
+        <p className="text-gray-400 text-xs
+sm:text-sm line-clamp-2">{resolvedDescription}</p>
       </div>
 
       <style>{`
