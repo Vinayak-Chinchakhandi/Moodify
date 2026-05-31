@@ -98,7 +98,9 @@ const Recommendations = () => {
         ...(pageToken && { pageToken }),
       });
 
-      const res = await fetch(`/api/search/songs?${params}`);
+      const res = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/search/songs?${params}`
+      );
       if (!res.ok) throw new Error(`API Error: ${res.status} ${res.statusText}`);
       const data = await res.json();
       if (!data.items || !Array.isArray(data.items)) {
@@ -110,7 +112,7 @@ const Recommendations = () => {
         const cacheKey = `recommendations:${mood || 'Neutral'}:${genre || ''}:${artist || ''}:${languages.join(',')}`;
         const cache = { key: cacheKey, timestamp: Date.now(), items: data.items };
         sessionStorage.setItem(cacheKey, JSON.stringify(cache));
-      } catch (e) {}
+      } catch (e) { }
     } catch (err) {
       console.error("Error fetching songs:", err);
       alert("Error fetching songs: " + err.message);
@@ -201,73 +203,73 @@ const Recommendations = () => {
 
   return (
     <div className="flex flex-col h-screen text-white px-3 py-2">
-        <div className="glass-card p-4 rounded-lg border border-white/10 mb-2">
-          <h2 className="text-2xl font-extrabold mb-1 gradient-text">Your Recommended Songs 🎵</h2>
-          <p className="text-gray-300 text-xs">
-            Based on {mood && <span className="text-pink-400">Mood: {mood}</span>}
-            {genre && <span className="text-cyan-400 ml-2">Genre: {genre}</span>}
-            {artist && <span className="text-orange-400 ml-2">Artist: {artist}</span>}
-          </p>
-        </div>
+      <div className="glass-card p-4 rounded-lg border border-white/10 mb-2">
+        <h2 className="text-2xl font-extrabold mb-1 gradient-text">Your Recommended Songs 🎵</h2>
+        <p className="text-gray-300 text-xs">
+          Based on {mood && <span className="text-pink-400">Mood: {mood}</span>}
+          {genre && <span className="text-cyan-400 ml-2">Genre: {genre}</span>}
+          {artist && <span className="text-orange-400 ml-2">Artist: {artist}</span>}
+        </p>
+      </div>
 
-        <div className="flex-1 overflow-y-auto mb-20 pr-2">
-          {songs.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              <p>No songs found. Try adjusting your preferences.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {songs.map((song) => (
-                <div
-                  key={song.videoId}
-                  className="glass-card p-3 rounded-lg border border-white/10 overflow-hidden hover:border-cyan-400/50 transition-all group relative cursor-pointer"
-                  onClick={() => handlePlaySong(song)}
-                >
-                  <div className="relative">
-                    <img src={song.thumbnail} alt={song.title} className="w-full h-28 object-cover rounded-lg mb-2 transition-transform" />
-                    <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="text-4xl">▶</div>
-                    </div>
-                  </div>
-
-                  <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2">{song.title}</h3>
-                  <p className="text-xs text-gray-400 mb-3 line-clamp-1">{song.artist}</p>
-
-                  <div className="flex gap-1">
-                    <button onClick={(e) => { e.stopPropagation(); handleLike(song); }} className={`flex-1 px-1.5 py-1 rounded text-xs font-semibold transition-all ${favorites.some((fav) => fav.videoId === song.videoId) ? "bg-pink-500 text-white" : "bg-white/10 text-gray-300 hover:bg-white/20"}`}>
-                      {favorites.some((fav) => fav.videoId === song.videoId) ? "❤️" : "🤍"}
-                    </button>
-
-                    <button onClick={(e) => { e.stopPropagation(); handleAddToPlaylist(song); }} className="flex-1 px-1.5 py-1 rounded text-xs font-semibold bg-white/10 text-gray-300 hover:bg-white/20 transition-all">
-                      📋
-                    </button>
-
-                    <button onClick={(e) => { e.stopPropagation(); handlePlaySong(song); }} className="flex-1 px-1.5 py-1 rounded text-xs font-semibold bg-cyan-500/30 text-cyan-300 hover:bg-cyan-500/50 transition-all">
-                      ▶
-                    </button>
+      <div className="flex-1 overflow-y-auto mb-20 pr-2">
+        {songs.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-gray-400">
+            <p>No songs found. Try adjusting your preferences.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {songs.map((song) => (
+              <div
+                key={song.videoId}
+                className="glass-card p-3 rounded-lg border border-white/10 overflow-hidden hover:border-cyan-400/50 transition-all group relative cursor-pointer"
+                onClick={() => handlePlaySong(song)}
+              >
+                <div className="relative">
+                  <img src={song.thumbnail} alt={song.title} className="w-full h-28 object-cover rounded-lg mb-2 transition-transform" />
+                  <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="text-4xl">▶</div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        <div className="fixed top-6 right-6 z-40">
-          <button onClick={handleBack} className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all">⬅ Back</button>
-        </div>
+                <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2">{song.title}</h3>
+                <p className="text-xs text-gray-400 mb-3 line-clamp-1">{song.artist}</p>
 
-        {playlistModal.show && playlistModal.song && (
-          <PlaylistModal
-            playlistModal={playlistModal}
-            setPlaylistModal={setPlaylistModal}
-            playlists={playlists}
-            setPlaylists={setPlaylists}
-            newPlaylistName={newPlaylistName}
-            setNewPlaylistName={setNewPlaylistName}
-            handleCreatePlaylist={handleCreatePlaylist}
-            handleSelectPlaylist={handleSelectPlaylist}
-          />
+                <div className="flex gap-1">
+                  <button onClick={(e) => { e.stopPropagation(); handleLike(song); }} className={`flex-1 px-1.5 py-1 rounded text-xs font-semibold transition-all ${favorites.some((fav) => fav.videoId === song.videoId) ? "bg-pink-500 text-white" : "bg-white/10 text-gray-300 hover:bg-white/20"}`}>
+                    {favorites.some((fav) => fav.videoId === song.videoId) ? "❤️" : "🤍"}
+                  </button>
+
+                  <button onClick={(e) => { e.stopPropagation(); handleAddToPlaylist(song); }} className="flex-1 px-1.5 py-1 rounded text-xs font-semibold bg-white/10 text-gray-300 hover:bg-white/20 transition-all">
+                    📋
+                  </button>
+
+                  <button onClick={(e) => { e.stopPropagation(); handlePlaySong(song); }} className="flex-1 px-1.5 py-1 rounded text-xs font-semibold bg-cyan-500/30 text-cyan-300 hover:bg-cyan-500/50 transition-all">
+                    ▶
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
+      </div>
+
+      <div className="fixed top-6 right-6 z-40">
+        <button onClick={handleBack} className="px-8 py-3 rounded-full font-semibold bg-white/10 border border-white/20 hover:bg-white/20 text-gray-300 hover:text-cyan-400 transition-all">⬅ Back</button>
+      </div>
+
+      {playlistModal.show && playlistModal.song && (
+        <PlaylistModal
+          playlistModal={playlistModal}
+          setPlaylistModal={setPlaylistModal}
+          playlists={playlists}
+          setPlaylists={setPlaylists}
+          newPlaylistName={newPlaylistName}
+          setNewPlaylistName={setNewPlaylistName}
+          handleCreatePlaylist={handleCreatePlaylist}
+          handleSelectPlaylist={handleSelectPlaylist}
+        />
+      )}
       <style>{`
         .glass-card {
           background: rgba(255, 255, 255, 0.05);
