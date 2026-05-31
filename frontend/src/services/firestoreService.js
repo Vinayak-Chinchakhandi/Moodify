@@ -123,6 +123,10 @@ export const addToHistory = async (userId, song) => {
 
     let history = userSnap.data().history || [];
 
+    history = history.filter(
+      item => item.videoId !== song.videoId
+    );
+
     const historyEntry = {
       videoId: song.videoId,
       title: song.title,

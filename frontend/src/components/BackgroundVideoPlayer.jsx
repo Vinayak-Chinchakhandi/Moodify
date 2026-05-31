@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { auth } from "../firebase/firebase";
+import { addToHistory } from "../services/firestoreService";
 
 const isValidVideoId = (id) => typeof id === "string" && id.trim().length >= 3;
 
@@ -52,16 +54,16 @@ const BackgroundVideoPlayer = () => {
               onReady: () => {
                 global.ready = true;
                 playerRef.current = global.player;
-                (global.queued || []).forEach((fn) => { try { fn(); } catch (e) {} });
+                (global.queued || []).forEach((fn) => { try { fn(); } catch (e) { } });
                 global.queued = [];
-                try { window.dispatchEvent(new CustomEvent("moodify-player-ready-temp")); } catch (e) {}
+                try { window.dispatchEvent(new CustomEvent("moodify-player-ready-temp")); } catch (e) { }
                 // restore persisted volume if available
                 try {
                   const v = Number(sessionStorage.getItem("moodifyVolume"));
                   if (!Number.isNaN(v) && typeof playerRef.current.setVolume === 'function') {
                     playerRef.current.setVolume(Number(v));
                   }
-                } catch (e) {}
+                } catch (e) { }
                 console.log("YouTube player ready (global)");
               },
               onStateChange: (e) => {
@@ -119,9 +121,9 @@ const BackgroundVideoPlayer = () => {
           const t = playerRef.current.getCurrentTime();
           const vid = videoIdRef.current || null;
           window.dispatchEvent(new CustomEvent("moodify-current-time", { detail: { currentTime: t, videoId: vid } }));
-          try { sessionStorage.setItem("moodifyCurrentTime", JSON.stringify({ currentTime: t, videoId: vid })); } catch {}
+          try { sessionStorage.setItem("moodifyCurrentTime", JSON.stringify({ currentTime: t, videoId: vid })); } catch { }
         }
-      } catch (e) {}
+      } catch (e) { }
     }, 1000);
   };
   const stopTimeBroadcast = () => {
@@ -131,7 +133,7 @@ const BackgroundVideoPlayer = () => {
   const callWhenReady = (fn) => {
     const global = ensureGlobal();
     if (global.ready && playerRef.current) {
-      try { fn(); } catch (e) {}
+      try { fn(); } catch (e) { }
     } else {
       global.queued = global.queued || [];
       global.queued.push(fn);
@@ -147,17 +149,22 @@ const BackgroundVideoPlayer = () => {
       g.index = typeof index === "number" ? index : (g.playlist ? g.playlist.findIndex(s => s.videoId === (song && song.videoId)) : 0);
       const vid = song?.videoId || (g.playlist && g.playlist[g.index]?.videoId) || null;
       if (!vid) return;
+      // Save to history
+      if (auth.currentUser && song) {
+        addToHistory(auth.currentUser.uid, song)
+          .catch(err => console.error("History save failed:", err));
+      }
       videoIdRef.current = vid;
       ensureGlobal().videoId = vid;
-      try { sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(song)); sessionStorage.setItem("moodifyCurrentPlaylist", JSON.stringify(g.playlist || [])); sessionStorage.setItem("moodifyCurrentIndex", String(g.index || 0)); } catch (e) {}
+      try { sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(song)); sessionStorage.setItem("moodifyCurrentPlaylist", JSON.stringify(g.playlist || [])); sessionStorage.setItem("moodifyCurrentIndex", String(g.index || 0)); } catch (e) { }
       callWhenReady(() => {
         try {
           playerRef.current.loadVideoById(vid);
           window.dispatchEvent(new CustomEvent("moodify-video-loaded", { detail: { videoId: vid } }));
           playerRef.current.playVideo();
-          try { sessionStorage.setItem("moodifyIsPlaying", "true"); } catch (e) {}
+          try { sessionStorage.setItem("moodifyIsPlaying", "true"); } catch (e) { }
         } catch (err) {
-          try { playerRef.current.cueVideoById(vid); } catch (e) {}
+          try { playerRef.current.cueVideoById(vid); } catch (e) { }
         }
       });
     };
@@ -186,16 +193,16 @@ const BackgroundVideoPlayer = () => {
 
     const handleEnterVisualStream = () => {
       // guard: set active flag so only this flow resumes later
-      try { window.__MOODIFY_VISUAL_STREAM_ACTIVE = true; } catch (e) {}
+      try { window.__MOODIFY_VISUAL_STREAM_ACTIVE = true; } catch (e) { }
       callWhenReady(() => {
         try {
           if (playerRef.current && typeof playerRef.current.getCurrentTime === "function") {
             const t = playerRef.current.getCurrentTime();
             const vid = videoIdRef.current || null;
-            try { sessionStorage.setItem("moodifyCurrentTime", JSON.stringify({ currentTime: t, videoId: vid })); } catch {}
+            try { sessionStorage.setItem("moodifyCurrentTime", JSON.stringify({ currentTime: t, videoId: vid })); } catch { }
           }
-        } catch (_) {}
-        try { if (playerRef.current && typeof playerRef.current.pauseVideo === "function") playerRef.current.pauseVideo(); } catch (err) {}
+        } catch (_) { }
+        try { if (playerRef.current && typeof playerRef.current.pauseVideo === "function") playerRef.current.pauseVideo(); } catch (err) { }
         window.dispatchEvent(new CustomEvent("moodify-player-state", { detail: { isPlaying: false } }));
       });
     };
@@ -203,15 +210,15 @@ const BackgroundVideoPlayer = () => {
     const handleExitVisualStream = () => {
       // only resume if we set the active flag earlier
       const wasActive = Boolean(window.__MOODIFY_VISUAL_STREAM_ACTIVE);
-      try { window.__MOODIFY_VISUAL_STREAM_ACTIVE = false; } catch (e) {}
+      try { window.__MOODIFY_VISUAL_STREAM_ACTIVE = false; } catch (e) { }
       if (!wasActive) return;
       callWhenReady(() => {
         try {
           const saved = JSON.parse(sessionStorage.getItem("moodifyCurrentTime") || "null");
           if (saved && saved.videoId && saved.currentTime && saved.videoId === videoIdRef.current) {
-            try { if (typeof playerRef.current.seekTo === "function") playerRef.current.seekTo(Number(saved.currentTime) || 0, true); } catch (e) {}
+            try { if (typeof playerRef.current.seekTo === "function") playerRef.current.seekTo(Number(saved.currentTime) || 0, true); } catch (e) { }
           }
-          try { if (playerRef.current && typeof playerRef.current.playVideo === "function") playerRef.current.playVideo(); } catch (err) {}
+          try { if (playerRef.current && typeof playerRef.current.playVideo === "function") playerRef.current.playVideo(); } catch (err) { }
           window.dispatchEvent(new CustomEvent("moodify-player-state", { detail: { isPlaying: true } }));
         } catch (err) {
           console.error("Failed to resume after visual stream exit:", err);
@@ -222,9 +229,9 @@ const BackgroundVideoPlayer = () => {
     const handleControlPlayPause = (e) => {
       const isPlaying = Boolean(e.detail?.isPlaying);
       if (isPlaying) {
-        callWhenReady(() => { try { playerRef.current.playVideo(); } catch (err) {} });
+        callWhenReady(() => { try { playerRef.current.playVideo(); } catch (err) { } });
       } else {
-        callWhenReady(() => { try { playerRef.current.pauseVideo(); } catch (err) {} });
+        callWhenReady(() => { try { playerRef.current.pauseVideo(); } catch (err) { } });
       }
     };
 
@@ -240,7 +247,7 @@ const BackgroundVideoPlayer = () => {
       if (Number.isNaN(v)) return;
       const vol100 = Math.max(0, Math.min(1, v)) * 100;
       callWhenReady(() => {
-        try { if (playerRef.current && typeof playerRef.current.setVolume === 'function') playerRef.current.setVolume(Math.round(vol100)); } catch (err) {}
+        try { if (playerRef.current && typeof playerRef.current.setVolume === 'function') playerRef.current.setVolume(Math.round(vol100)); } catch (err) { }
       });
     };
     window.addEventListener("moodify-volume", handleVolume);
@@ -277,7 +284,7 @@ const BackgroundVideoPlayer = () => {
             if (playerRef.current && typeof playerRef.current.loadVideoById === "function") {
               playerRef.current.loadVideoById(vid);
             } else {
-              try { playerRef.current.cueVideoById(vid); } catch (e) {}
+              try { playerRef.current.cueVideoById(vid); } catch (e) { }
             }
             window.dispatchEvent(new CustomEvent("moodify-video-loaded", { detail: { videoId: vid } }));
           }

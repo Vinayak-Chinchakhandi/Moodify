@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Play, Pause, SkipBack, SkipForward, Heart, ExternalLink, List } from "lucide-react";
-import { addToFavorites, removeFromFavorites, addToHistory, addToPlaylist, createPlaylist, getUserPlaylists } from "../services/firestoreService";
+import { addToFavorites, removeFromFavorites, addToPlaylist, createPlaylist, getUserPlaylists } from "../services/firestoreService";
 import { auth } from "../firebase/firebase";
 
 const isValidVideoId = (id) => typeof id === "string" && id.trim().length >= 3;
@@ -41,7 +41,16 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
     } catch (err) { console.error("Failed to restore session:", err); }
   }, [playlist]);
 
-  const currentSong = playlist.length > 0 ? playlist[currentIndex] : { title: "No song", artist: "", videoId: null, thumbnail: null };
+  const currentSong = useMemo(() => {
+    return playlist.length > 0
+      ? playlist[currentIndex]
+      : {
+        title: "No song",
+        artist: "",
+        videoId: null,
+        thumbnail: null,
+      };
+  }, [playlist, currentIndex]);
 
   useEffect(() => {
     setIsLiked(!!currentSong?.isLiked);
@@ -84,7 +93,7 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
     window.dispatchEvent(new CustomEvent("moodify-play", { detail: { song: nextSong, playlist, index: nextIndex } }));
     setCurrentIndex(nextIndex);
     setIsPlaying(true);
-    try { sessionStorage.setItem("moodifyCurrentIndex", String(nextIndex)); sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(nextSong)); sessionStorage.setItem("moodifyIsPlaying","true"); } catch {}
+    try { sessionStorage.setItem("moodifyCurrentIndex", String(nextIndex)); sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(nextSong)); sessionStorage.setItem("moodifyIsPlaying", "true"); } catch { }
   }, [playlist, currentIndex]);
 
   const handlePrev = useCallback(() => {
@@ -94,14 +103,14 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
     window.dispatchEvent(new CustomEvent("moodify-play", { detail: { song: prevSong, playlist, index: prevIndex } }));
     setCurrentIndex(prevIndex);
     setIsPlaying(true);
-    try { sessionStorage.setItem("moodifyCurrentIndex", String(prevIndex)); sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(prevSong)); sessionStorage.setItem("moodifyIsPlaying","true"); } catch {}
+    try { sessionStorage.setItem("moodifyCurrentIndex", String(prevIndex)); sessionStorage.setItem("moodifyCurrentSong", JSON.stringify(prevSong)); sessionStorage.setItem("moodifyIsPlaying", "true"); } catch { }
   }, [playlist, currentIndex]);
 
   const handlePlayPause = () => {
     if (!currentSong || !isValidVideoId(currentSong.videoId)) return;
     const newState = !isPlaying;
     setIsPlaying(newState);
-    try { sessionStorage.setItem("moodifyIsPlaying", newState ? "true" : "false"); } catch {}
+    try { sessionStorage.setItem("moodifyIsPlaying", newState ? "true" : "false"); } catch { }
     window.dispatchEvent(new CustomEvent("moodify-control-play-pause", { detail: { isPlaying: newState } }));
   };
 
@@ -137,7 +146,7 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
   const handleVolumeChange = (val) => {
     const num = Number(val);
     setVolume(num);
-    try { sessionStorage.setItem("moodifyVolume", String(num)); } catch {}
+    try { sessionStorage.setItem("moodifyVolume", String(num)); } catch { }
     window.dispatchEvent(new CustomEvent("moodify-volume", { detail: { volume: num / 100 } }));
   };
 
@@ -213,7 +222,7 @@ const AudioPlayer = ({ playlist = [], isGlobal = false }) => {
                 {showVolume && (
                   <div ref={volumeRef} className="absolute bottom-14 right-0 w-44 p-3 bg-white/5 border border-white/10 rounded-lg shadow-lg">
                     <div className="flex items-center gap-3">
-                      <input type="range" min="0" max="100" value={volume} onChange={(e) => handleVolumeChange(e.target.value)} onInput={(e) => handleVolumeChange(e.target.value)} className="w-full volume-slider" style={{ ['--volume']: `${volume}%` }} />
+                      <input type="range" min="0" max="100" value={volume} onChange={(e) => handleVolumeChange(e.target.value)} onInput={(e) => handleVolumeChange(e.target.value)} className="w-full volume-slider" style={{ "--volume": `${volume}%` }} />
                       <div className="text-sm text-cyan-200 w-10 text-right">{volume}</div>
                     </div>
                   </div>
@@ -253,7 +262,7 @@ const sliderStyles = `
 `;
 
 // inject styles once
-try { if (typeof document !== 'undefined' && !document.getElementById('moodify-volume-styles')) { const s = document.createElement('style'); s.id = 'moodify-volume-styles'; s.innerHTML = sliderStyles; document.head.appendChild(s); } } catch (e) {}
+try { if (typeof document !== 'undefined' && !document.getElementById('moodify-volume-styles')) { const s = document.createElement('style'); s.id = 'moodify-volume-styles'; s.innerHTML = sliderStyles; document.head.appendChild(s); } } catch (e) { }
 
 function PlaylistModal({ playlistModal, setPlaylistModal, playlists, setPlaylists, newPlaylistName, setNewPlaylistName, handleCreatePlaylist, handleSelectPlaylist }) {
   const [selected, setSelected] = useState(null);
